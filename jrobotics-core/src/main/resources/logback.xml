@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  JRobotics Logback Configuration
+  
+  Copyright (c) 2025 Silvère Martin-Michiellot <silvere.martin@gmail.com>
+  Co-authored by Gemini AI Assistant
+  
+  Licensed under the MIT License.
+-->
+<configuration>
+
+    <!-- Properties -->
+    <property name="LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"/>
+    <property name="LOG_DIR" value="${LOG_DIR:-logs}"/>
+
+    <!-- Console Appender -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- File Appender -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_DIR}/jrobotics.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_DIR}/jrobotics.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>10MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>1GB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- Async Appender for better performance -->
+    <appender name="ASYNC_FILE" class="ch.qos.logback.classic.AsyncAppender">
+        <queueSize>512</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <appender-ref ref="FILE"/>
+    </appender>
+
+    <!-- JRobotics Loggers -->
+    <logger name="org.jrobotics" level="DEBUG"/>
+    <logger name="org.jrobotics.core" level="DEBUG"/>
+    <logger name="org.jrobotics.hal" level="INFO"/>
+    <logger name="org.jrobotics.sensor" level="DEBUG"/>
+    <logger name="org.jrobotics.actuator" level="DEBUG"/>
+    <logger name="org.jrobotics.processor" level="DEBUG"/>
+    <logger name="org.jrobotics.simulation" level="INFO"/>
+    <logger name="org.jrobotics.network" level="INFO"/>
+
+    <!-- Third-party Loggers -->
+    <logger name="com.jme3" level="WARN"/>
+    <logger name="org.lwjgl" level="WARN"/>
+
+    <!-- Root Logger -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="ASYNC_FILE"/>
+    </root>
+
+</configuration>
