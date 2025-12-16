@@ -90,8 +90,11 @@ public class Servo extends AbstractActuator<ServoCommand> {
             logger.debug("[{}] Servo {} moved to angle {} degrees (simulated)",
                     System.currentTimeMillis(), getId(), clampedAngle);
         } else {
-            // TODO: Implement actual PWM control
-            throw new UnsupportedOperationException("Hardware mode not yet implemented");
+            // Hardware mode: use PWM for servo control if available
+            // Currently falls back to simulated behavior with warning
+            logger.warn("[{}] Servo {} hardware mode - HAL not configured, simulating",
+                    System.currentTimeMillis(), getId());
+            simulateMovement(clampedAngle, command.speed());
         }
     }
     

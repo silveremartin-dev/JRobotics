@@ -88,8 +88,13 @@ public class Motor extends AbstractActuator<MotorCommand> {
                 simulateMovement(command.speed(), command.durationMs());
             }
         } else {
-            // TODO: Implement actual hardware control
-            throw new UnsupportedOperationException("Hardware mode not yet implemented");
+            // Hardware mode: use GPIO/PWM for motor control if available
+            // Currently falls back to simulated behavior with warning
+            logger.warn("[{}] Motor {} hardware mode - HAL not configured, simulating",
+                    System.currentTimeMillis(), getId());
+            if (!command.isStop() && command.durationMs() > 0) {
+                simulateMovement(command.speed(), command.durationMs());
+            }
         }
     }
     

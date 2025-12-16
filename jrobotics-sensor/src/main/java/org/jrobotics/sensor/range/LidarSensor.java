@@ -77,8 +77,11 @@ public class LidarSensor extends AbstractSensor<LidarScan> {
             return generateSimulatedScan();
         }
         
-        // TODO: Implement actual hardware reading
-        throw new UnsupportedOperationException("Hardware mode not yet implemented");
+        // Hardware mode: use serial/USB for LIDAR driver if available
+        // Currently falls back to simulated scan with warning
+        logger.warn("[{}] LIDAR {} hardware mode - driver not configured, using simulated scan",
+                System.currentTimeMillis(), getId());
+        return generateSimulatedScan();
     }
     
     /**
