@@ -38,5 +38,49 @@
             <artifactId>jrobotics-actuator</artifactId>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>org.jrobotics</groupId>
+            <artifactId>jrobotics-hal</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.jrobotics</groupId>
+            <artifactId>jrobotics-simulation</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- JMonkeyEngine 3D (optional) -->
+        <dependency>
+            <groupId>org.jmonkeyengine</groupId>
+            <artifactId>jme3-core</artifactId>
+            <version>3.6.1-stable</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.jmonkeyengine</groupId>
+            <artifactId>jme3-desktop</artifactId>
+            <version>3.6.1-stable</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.jmonkeyengine</groupId>
+            <artifactId>jme3-lwjgl3</artifactId>
+            <version>3.6.1-stable</version>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- JavaFX (optional) -->
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-controls</artifactId>
+            <version>21</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-graphics</artifactId>
+            <version>21</version>
+            <optional>true</optional>
+        </dependency>
     </dependencies>
 </project>
