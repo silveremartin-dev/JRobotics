@@ -30,23 +30,13 @@
         </dependency>
         <dependency>
             <groupId>org.jrobotics</groupId>
-            <artifactId>jrobotics-hal</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jrobotics</groupId>
             <artifactId>jrobotics-sensor</artifactId>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.jrobotics</groupId>
             <artifactId>jrobotics-actuator</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jrobotics</groupId>
-            <artifactId>jrobotics-processor</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jrobotics</groupId>
-            <artifactId>jrobotics-network</artifactId>
+            <optional>true</optional>
         </dependency>
     </dependencies>
 </project>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  JRobotics Logback Configuration for Demo
+  
+  Copyright (c) 2025 Silvère Martin-Michiellot <silvere.martin@gmail.com>
+  Co-authored by Gemini AI Assistant
+  
+  Licensed under the MIT License.
+-->
+<configuration>
+
+    <property name="LOG_PATTERN" value="%d{HH:mm:ss.SSS} [%thread] %-5level %logger{20} - %msg%n"/>
+
+    <!-- Console Appender -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- Demo loggers - show INFO and above -->
+    <logger name="org.jrobotics" level="INFO"/>
+    <logger name="org.jrobotics.demo" level="DEBUG"/>
+
+    <!-- Third-party Loggers -->
+    <logger name="com.jme3" level="WARN"/>
+
+    <!-- Root Logger -->
+    <root level="WARN">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+
+</configuration>

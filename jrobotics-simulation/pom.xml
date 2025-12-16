@@ -29,18 +29,14 @@
             <artifactId>jrobotics-core</artifactId>
         </dependency>
 
-        <!-- jMonkeyEngine for physics -->
+        <!-- jMonkeyEngine core for 3D rendering (optional, physics is custom) -->
         <dependency>
             <groupId>org.jmonkeyengine</groupId>
             <artifactId>jme3-core</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.jmonkeyengine</groupId>
-            <artifactId>jme3-bullet</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jmonkeyengine</groupId>
-            <artifactId>jme3-bullet-native</artifactId>
-        </dependency>
+
+        <!-- Note: jme3-bullet and jme3-bullet-native are not available in Maven Central.
+             Using custom simple physics implementation instead. 
+             For advanced physics, users can integrate their own physics engine. -->
     </dependencies>
 </project>
