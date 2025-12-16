@@ -8,14 +8,25 @@
 
 JRobotics is a comprehensive, modular robotics framework designed for hobbyists and professionals alike. It provides a complete toolkit for building, simulating, and controlling robots with an AI-friendly API.
 
+## Project Statistics
+
+| Metric | Value |
+|--------|-------|
+| Modules | 11 |
+| Java Classes | 95+ |
+| Unit Tests | 70+ |
+| Git Commits | 11 |
+| Lines of Code | ~10,000 |
+
 ## Features
 
 ### 🤖 Core Capabilities
 
 - **Modular Architecture** - Use only what you need
-- **AI-Friendly API** - Fluent builders, clear abstractions, easy integration
+- **AI-Friendly API** - Fluent builders, clear abstractions
 - **Hardware Abstraction Layer** - Platform-independent hardware access
 - **Full Lifecycle Management** - Initialize, start, stop, destroy patterns
+- **Thread Pools** - Specialized executors for sensors, control, background
 
 ### 📡 Sensors
 
@@ -24,15 +35,15 @@ JRobotics is a comprehensive, modular robotics framework designed for hobbyists 
 - IMU (accelerometer, gyroscope, magnetometer)
 - Environmental (temperature, humidity, pressure)
 - Encoder/odometry, GPS/GNSS
-- Sensor fusion framework
+- **Sensor Fusion** - Kalman Filter (1D + Extended), Complementary Filter
 
 ### 🧠 Processors / AI
 
-- Path planning (A*, RRT, Dijkstra)
-- SLAM integration
-- Behavior trees & FSM
-- Decision frameworks
-- ML/AI integration points
+- **Path Planning** - A* grid-based algorithm
+- **Navigation** - GoToGoal reactive control
+- **Behavior Trees** - Sequence, Selector, Condition, Action nodes
+- **Decision Frameworks** - FSM patterns
+- **AI Integration** - Pluggable AIEngine interface
 
 ### ⚙️ Actuators
 
@@ -43,24 +54,23 @@ JRobotics is a comprehensive, modular robotics framework designed for hobbyists 
 
 ### 🌍 Simulation
 
-- Physics engine integration
-- Virtual robot support
-- Environment modeling
-- Hybrid real+virtual scenarios
-- 3D visualization
+- **Physics Engine** - Vector3, PhysicsBody, PhysicsWorld
+- **Environment Builder** - Arena creation with obstacles
+- **Visualization** - Console (ASCII), Swing2D, JavaFX2D, JMonkeyEngine 3D
+- **Memory Efficient** - Vector3Pool for hot paths
 
 ### 🌐 Networking
 
-- Peer-to-peer communication
-- Server-mediated protocols
-- Remote teleoperation
-- Robot swarm coordination
-- Secure communication (TLS)
+- Peer-to-peer UDP communication
+- Server-mediated TCP protocols
+- Remote teleoperation (Master/Slave)
+- Pluggable NetworkTransport interface
+- [Networking Comparison](docs/NETWORKING.md)
 
-### 🔌 Bridges
+### 🔌 Bridges & Hardware
 
-- ROS2 integration
-- MQTT support
+- ROS2 integration (stub, ready for rcljava)
+- **Robot Adapters**: TurtleBot3, iRobot Create3, Arduino, Raspberry Pi
 - Extensible protocol framework
 
 ## Quick Start
@@ -78,64 +88,60 @@ cd jrobotics
 mvn clean install
 ```
 
+### Run Demos
+
+```bash
+# Console simulation (ASCII)
+./run-visual-demo.bat     # Windows
+./run-visual-demo.sh      # Linux/macOS
+
+# 3D JMonkeyEngine simulation
+./run-3d-demo.bat         # Windows
+./run-3d-demo.sh          # Linux/macOS
+
+# Performance benchmarks
+./run-benchmarks.bat      # Windows
+./run-benchmarks.sh       # Linux/macOS
+```
+
 ### Basic Usage
 
 ```java
-import org.jrobotics.api.RoboticsAPI;
-import org.jrobotics.robot.WheeledRobot;
+import org.jrobotics.simulation.*;
+import org.jrobotics.processor.navigation.AStarPathPlanner;
 
-public class MyRobot {
-    public static void main(String[] args) {
-        // Create a simple wheeled robot
-        var robot = RoboticsAPI.builder()
-            .withRobot(new WheeledRobot("MyBot"))
-            .withSensor(Sensors.ultrasonic("front", 0.0, 1.0, 0.0))
-            .withSensor(Sensors.imu("body"))
-            .withActuator(Actuators.motor("leftWheel"))
-            .withActuator(Actuators.motor("rightWheel"))
-            .build();
-        
-        // Start the robot
-        robot.start();
-        
-        // Move forward
-        robot.move(1.0, 0.0);
-        
-        // Read sensor data
-        double distance = robot.getSensor("front").read();
-        
-        // Stop when obstacle detected
-        if (distance < 0.3) {
-            robot.stop();
-        }
-    }
-}
+// Create physics world
+PhysicsWorld world = new PhysicsWorld();
+world.addBody(PhysicsBody.dynamic("robot", 
+    Vector3.ZERO, new Vector3(1, 0, 0), 0.5));
+
+// Path planning
+AStarPathPlanner planner = new AStarPathPlanner(100, 100);
+List<int[]> path = planner.findPath(0, 0, 50, 50);
 ```
 
 ## Project Structure
 
 ```
 jrobotics/
-├── jrobotics-core        # Core interfaces and utilities
-├── jrobotics-hal         # Hardware Abstraction Layer
-├── jrobotics-sensor      # Sensor implementations
-├── jrobotics-actuator    # Actuator implementations
-├── jrobotics-processor   # AI/Reasoning processors
-├── jrobotics-simulation  # Physics simulation
-├── jrobotics-network     # Networking protocols
-├── jrobotics-robot       # Robot implementations
-├── jrobotics-bridge      # External framework bridges
-├── jrobotics-benchmark   # Performance benchmarks
-├── demo/                 # Demo applications
-└── scripts/              # Launch and utility scripts
+├── jrobotics-core        # Core interfaces, EventBus, Executors
+├── jrobotics-hal         # GPIO, I2C, SPI, Serial abstraction
+├── jrobotics-sensor      # Sensors, Kalman/EKF, Complementary filter
+├── jrobotics-actuator    # Motors, Servos, PID control
+├── jrobotics-processor   # A* planning, GoToGoal, Behavior Trees
+├── jrobotics-simulation  # Physics, Vector3Pool, Visualization
+├── jrobotics-network     # TCP/UDP, Remote control
+├── jrobotics-robot       # Robot implementations, Hardware adapters
+├── jrobotics-bridge      # ROS2, external frameworks
+├── jrobotics-benchmark   # JMH performance tests
+└── jrobotics-demo        # Demo applications
 ```
 
 ## Documentation
 
 - [Architecture Overview](architecture.md)
-- [API Reference](javadoc/)
-- [Getting Started Guide](docs/getting-started.md)
-- [Examples](demo/)
+- [Networking Comparison](docs/NETWORKING.md)
+- [API Reference](javadoc/) - `mvn javadoc:aggregate`
 
 ## Building
 
@@ -143,33 +149,30 @@ jrobotics/
 # Build all modules
 mvn clean install
 
-# Skip tests
-mvn clean install -DskipTests
+# Run tests
+mvn test
 
 # Generate JavaDoc
 mvn javadoc:aggregate
 
 # Run benchmarks
-mvn -pl jrobotics-benchmark exec:java
+java -jar jrobotics-benchmark/target/benchmarks.jar
 ```
-
-## Contributing
-
-Contributions are welcome! Please read our contributing guidelines before submitting pull requests.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT License - see [LICENSE](LICENSE) file.
 
 ## Authors
 
 - **Silvère Martin-Michiellot** - Lead Developer - <silvere.martin@gmail.com>
 - **Gemini AI Assistant** - Co-Developer
 
-## Acknowledgments
+## References
 
-- jMonkeyEngine team for physics engine
-- All open-source contributors whose work made this possible
+1. Siegwart, R., et al. (2011). *Introduction to Autonomous Mobile Robots*. MIT Press.
+2. Thrun, S., et al. (2005). *Probabilistic Robotics*. MIT Press.
+3. Colledanchise, M., & Ögren, P. (2018). *Behavior Trees in Robotics and AI*. CRC Press.
 
 ---
 
