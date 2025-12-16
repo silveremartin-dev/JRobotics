@@ -193,16 +193,29 @@ public class JMonkey3DVisualizer extends SimpleApplication implements Visualizer
     
     @Override
     public void initialize() {
-        // Start in a new thread
+        if (running) {
+            return; // Already initialized
+        }
+        
+        // Start in a new thread - JME must run on its own thread
         Thread jmeThread = new Thread(() -> {
-            start();
+            try {
+                start();  // This blocks until the window closes
+            } catch (Exception e) {
+                logger.error("JME3 start failed", e);
+            }
         }, "JME3-Visualizer");
         jmeThread.setDaemon(true);
         jmeThread.start();
         
-        // Wait for initialization
-        while (!initialized) {
+        // Wait for initialization (timeout after 10 seconds)
+        int timeout = 200; // 200 * 50ms = 10s
+        while (!initialized && timeout-- > 0) {
             try { Thread.sleep(50); } catch (InterruptedException ignored) {}
+        }
+        
+        if (!initialized) {
+            logger.error("JME3 initialization timeout");
         }
     }
     

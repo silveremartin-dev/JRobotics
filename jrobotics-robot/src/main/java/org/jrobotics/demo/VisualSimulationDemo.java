@@ -11,12 +11,12 @@ package org.jrobotics.demo;
 
 import org.jrobotics.simulation.*;
 import org.jrobotics.simulation.environment.EnvironmentBuilder;
-import org.jrobotics.simulation.visualization.Swing2DVisualizer;
+import org.jrobotics.simulation.visualization.ConsoleVisualizer;
 
 /**
- * Visual demo showing a robot navigating in a simulated environment.
+ * Console-based demo showing a robot navigating in a simulated environment.
  * 
- * <p>Run this to see the graphical 2D visualization.</p>
+ * <p>Run this to see ASCII visualization in the terminal.</p>
  * 
  * @author Silvère Martin-Michiellot
  * @author Gemini AI Assistant
@@ -37,14 +37,11 @@ public class VisualSimulationDemo {
             .addRobot("robot", -8, 0, 5.0, 0.5)
             .build();
         
-        // Create visualizer
-        Swing2DVisualizer visualizer = new Swing2DVisualizer(
-            "JRobotics - Robot Simulation", 1024, 768);
-        visualizer.setScale(35.0);
-        visualizer.setShowTrails(true);
+        // Create console visualizer (works in any terminal)
+        ConsoleVisualizer visualizer = new ConsoleVisualizer(40, 20, 2.0);
         
         // Create simulation runner
-        SimulationRunner runner = new SimulationRunner(world, 1.0/60.0, 60);
+        SimulationRunner runner = new SimulationRunner(world, 1.0/10.0, 10); // 10 FPS for console
         runner.setVisualizer(visualizer);
         
         // Get robot body and add simple movement
@@ -59,7 +56,7 @@ public class VisualSimulationDemo {
         // Add a step callback to move the robot in a pattern
         final double[] time = {0};
         runner.setStepCallback(() -> {
-            time[0] += 1.0/60.0;
+            time[0] += 0.1;
             
             if (robotRef[0] != null) {
                 // Circular motion
@@ -77,13 +74,18 @@ public class VisualSimulationDemo {
             }
         });
         
-        System.out.println("Starting visual simulation...");
-        System.out.println("Close the window to exit.\n");
+        System.out.println("Starting console simulation...");
+        System.out.println("Press Ctrl+C to exit.\n");
         
-        // Run until window is closed
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException ignored) {}
+        
+        // Run for 100 steps
         runner.start();
         
-        while (runner.isRunning() && visualizer.isActive()) {
+        int maxSteps = 100;
+        while (runner.isRunning() && world.getStepCount() < maxSteps) {
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
@@ -93,5 +95,6 @@ public class VisualSimulationDemo {
         
         runner.stop();
         System.out.println("\nSimulation ended after " + world.getStepCount() + " steps.");
+        System.out.println("For 3D visualization, run: run-3d-demo.bat");
     }
 }
