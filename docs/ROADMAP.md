@@ -166,9 +166,10 @@
 
 | Feature | Difficulty | Description |
 |---------|------------|-------------|
-| **Native CV** | High | Restore full OpenCV with GPU accel |
-| **ROS2 Bridge** | High | Full rcljava integration for ROS2 Humble |
-| **Digital Twin** | High | Cloud synchronization with AWS IoT |
+| **Native CV** | ✅ Done | Restore full OpenCV with GPU accel (JavaCV 1.5.10 verified) |
+| **ROS2 Bridge** | 🚧 Partial | Pure Java approach structure ready; pending `jros2client` availability in Maven |
+| **Digital Twin** | 🚧 Partial | AWS IoT SDK integrated; Agent framework implemented |
+| **Swarm Learning** | High | Distributed RL across multiple robots |
 
 ### Medium Priority
 

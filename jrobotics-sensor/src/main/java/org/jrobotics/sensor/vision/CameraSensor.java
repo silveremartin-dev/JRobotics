@@ -9,15 +9,14 @@
  */
 package org.jrobotics.sensor.vision;
 
-// import org.bytedeco.opencv.opencv_core.Mat; // Disabled due to dependency issues
+import org.bytedeco.opencv.opencv_core.Mat;
 import org.jrobotics.sensor.Sensor;
 
 /**
  * Interface for camera sensors.
  * 
  * <p>
- * Produces generic frames (e.g., OpenCV Mat, but typed as Object for now to fix
- * build).
+ * Produces OpenCV {@link Mat} frames.
  * </p>
  * 
  * @author Silvère Martin-Michiellot
@@ -25,7 +24,7 @@ import org.jrobotics.sensor.Sensor;
  * @version 2.0.0
  * @since 2.4.0
  */
-public interface CameraSensor extends Sensor<Object> {
+public interface CameraSensor extends Sensor<Mat> {
 
     /**
      * Gets the camera width resolution.

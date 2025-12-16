@@ -22,11 +22,16 @@ import java.util.function.Consumer;
 /**
  * Bridge for ROS2 (Robot Operating System 2).
  * 
- * <p>This is a stub implementation that demonstrates the API.
- * Real implementation would use rcljava or similar ROS2 Java bindings.</p>
+ * <p>
+ * Connects JRobotics to ROS2 DDS domain.
+ * </p>
  * 
- * <p>To use with real ROS2, add a dependency to rcljava and implement
- * the native calls.</p>
+ * <p>
+ * <b>Note:</b> Pure Java implementation requires `jros2client` libraries which
+ * are not currently resolving in this environment. This is a placeholder that
+ * simulates connection. To enable real ROS2, invoke with valid jros2client
+ * dependencies.
+ * </p>
  * 
  * @author Silvère Martin-Michiellot
  * @author Gemini AI Assistant
@@ -34,165 +39,126 @@ import java.util.function.Consumer;
  * @since 2.0.0
  */
 public class Ros2Bridge implements RoboticsBridge {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(Ros2Bridge.class);
-    
+
     private final String nodeName;
     private LifecycleState state = LifecycleState.CREATED;
     private final Map<String, List<Consumer<?>>> subscribers = new ConcurrentHashMap<>();
     private final Map<String, Object> lastPublished = new ConcurrentHashMap<>();
+
     private boolean connected = false;
-    
-    /**
-     * Creates a ROS2 bridge.
-     * 
-     * @param nodeName the ROS2 node name
-     */
+
     public Ros2Bridge(String nodeName) {
         this.nodeName = nodeName;
     }
-    
+
     @Override
     public String getBridgeName() {
         return "ROS2";
     }
-    
+
     @Override
     public void initialize() throws LifecycleException {
         state = LifecycleState.INITIALIZED;
         logger.info("[{}] ROS2 bridge '{}' initialized", System.currentTimeMillis(), nodeName);
-        
-        // In real implementation:
-        // RCLJava.rclJavaInit();
-        // node = new Node(nodeName);
     }
-    
+
     @Override
     public void start() throws LifecycleException {
-        state = LifecycleState.RUNNING;
-        connected = true;
-        logger.info("[{}] ROS2 bridge '{}' started", System.currentTimeMillis(), nodeName);
-        
-        // In real implementation:
-        // executor = new MultiThreadedExecutor();
-        // executor.addNode(node);
-        // executor.spin();
+        try {
+            state = LifecycleState.RUNNING;
+            connected = true;
+            logger.warn("[{}] ROS2 bridge '{}' started (STUB MODE - No real connection)", System.currentTimeMillis(),
+                    nodeName);
+        } catch (Exception e) {
+            throw new LifecycleException("Failed to start ROS2 bridge", e);
+        }
     }
-    
-    @Override
-    public void pause() throws LifecycleException {
-        state = LifecycleState.PAUSED;
-    }
-    
-    @Override
-    public void resume() throws LifecycleException {
-        state = LifecycleState.RUNNING;
-    }
-    
+
     @Override
     public void stop() throws LifecycleException {
         connected = false;
         state = LifecycleState.STOPPED;
         logger.info("[{}] ROS2 bridge '{}' stopped", System.currentTimeMillis(), nodeName);
     }
-    
+
+    @Override
+    public void pause() throws LifecycleException {
+        state = LifecycleState.PAUSED;
+    }
+
+    @Override
+    public void resume() throws LifecycleException {
+        state = LifecycleState.RUNNING;
+    }
+
     @Override
     public void shutdown() throws LifecycleException {
-        connected = false;
+        stop();
         subscribers.clear();
         state = LifecycleState.DESTROYED;
         logger.info("[{}] ROS2 bridge '{}' destroyed", System.currentTimeMillis(), nodeName);
-        
-        // In real implementation:
-        // node.close();
-        // RCLJava.shutdown();
     }
-    
-    
+
     public LifecycleState getState() {
         return state;
     }
-    
+
     @Override
     public boolean isRunning() {
         return state == LifecycleState.RUNNING;
     }
-    
+
     @Override
     public boolean isConnectedToFramework() {
         return connected;
     }
-    
+
     @Override
     public boolean publish(String topic, Object message) {
-        if (!connected) return false;
-        
+        if (!connected)
+            return false;
         lastPublished.put(topic, message);
-        logger.debug("[{}] Published to {}: {}", System.currentTimeMillis(), topic, message);
-        
-        // In real implementation:
-        // Publisher<MsgType> publisher = node.createPublisher(MsgType.class, topic);
-        // publisher.publish(message);
-        
+        logger.debug("[STUB] Publishing to {}: {}", topic, message);
         return true;
     }
-    
+
     @Override
-    @SuppressWarnings("unchecked")
     public <T> void subscribe(String topic, Class<T> type, Consumer<T> handler) {
         subscribers.computeIfAbsent(topic, k -> new CopyOnWriteArrayList<>()).add(handler);
-        logger.debug("[{}] Subscribed to {}", System.currentTimeMillis(), topic);
-        
-        // In real implementation:
-        // Subscription<T> sub = node.createSubscription(type, topic, handler::accept);
+        logger.debug("[STUB] Subscribed to {}", topic);
     }
-    
+
     @Override
     public void unsubscribe(String topic) {
         subscribers.remove(topic);
-        logger.debug("[{}] Unsubscribed from {}", System.currentTimeMillis(), topic);
+        logger.debug("[STUB] Unsubscribed from {}", topic);
     }
-    
+
     @Override
     public <R> R callService(String serviceName, Object request, Class<R> responseType) {
-        if (!connected) return null;
-        
-        logger.debug("[{}] Calling service {}", System.currentTimeMillis(), serviceName);
-        
-        // In real implementation:
-        // Client<RequestType, ResponseType> client = node.createClient(serviceType, serviceName);
-        // Future<ResponseType> future = client.asyncSendRequest(request);
-        // return future.get();
-        
-        // Stub: return null
+        logger.warn("Service calls not yet supported");
         return null;
     }
-    
+
     /**
-     * Simulates receiving a message (for testing).
-     */
-    @SuppressWarnings("unchecked")
-    public <T> void simulateMessage(String topic, T message) {
-        List<Consumer<?>> handlers = subscribers.get(topic);
-        if (handlers != null) {
-            for (Consumer<?> handler : handlers) {
-                ((Consumer<T>) handler).accept(message);
-            }
-        }
-    }
-    
-    /**
-     * Gets the last published message on a topic (for testing).
-     */
-    @SuppressWarnings("unchecked")
-    public <T> T getLastPublished(String topic) {
-        return (T) lastPublished.get(topic);
-    }
-    
-    /**
-     * Gets the node name.
+     * Gets sender node name.
+     * 
+     * @return node name
      */
     public String getNodeName() {
         return nodeName;
+    }
+
+    // Testing helpers
+    public boolean simulateMessage(String topic, Object msg) {
+        List<Consumer<?>> subs = subscribers.get(topic);
+        if (subs == null)
+            return false;
+        for (Consumer sub : subs) {
+            sub.accept(msg);
+        }
+        return true;
     }
 }
