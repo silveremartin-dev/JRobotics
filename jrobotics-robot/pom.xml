@@ -68,6 +68,12 @@
             <version>3.6.1-stable</version>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>org.jmonkeyengine</groupId>
+            <artifactId>jme3-plugins</artifactId>
+            <version>3.6.1-stable</version>
+            <optional>true</optional>
+        </dependency>
 
         <!-- JavaFX (optional) -->
         <dependency>

@@ -32,5 +32,19 @@
             <groupId>org.jrobotics</groupId>
             <artifactId>jrobotics-hal</artifactId>
         </dependency>
+
+        <!-- Computer Vision (OpenCV via JavaCV) -->
+        <dependency>
+            <groupId>org.bytedeco</groupId>
+            <artifactId>javacv-platform</artifactId>
+            <version>1.5.9</version>
+        </dependency>
+
+        <!-- Voice Recognition (Vosk) -->
+        <dependency>
+            <groupId>com.alphacephei</groupId>
+            <artifactId>vosk</artifactId>
+            <version>0.3.38</version>
+        </dependency>
     </dependencies>
 </project>

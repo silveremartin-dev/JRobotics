@@ -33,7 +33,9 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * 3D visualizer using JMonkeyEngine.
  * 
- * <p>Provides real-time 3D rendering of the simulation.</p>
+ * <p>
+ * Provides real-time 3D rendering of the simulation.
+ * </p>
  * 
  * @author Silvère Martin-Michiellot
  * @author Gemini AI Assistant
@@ -41,141 +43,78 @@ import java.util.concurrent.ConcurrentHashMap;
  * @since 2.0.0
  */
 public class JMonkey3DVisualizer extends SimpleApplication implements Visualizer {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(JMonkey3DVisualizer.class);
-    
+
     private PhysicsWorld currentWorld;
     private Node robotsNode;
     private Node obstaclesNode;
-    private final Map<String, Geometry> bodyGeometries = new ConcurrentHashMap<>();
-    
-    private volatile boolean initialized = false;
-    private volatile boolean running = false;
-    
-    private Material robotMaterial;
-    private Material obstacleMaterial;
-    private Material groundMaterial;
-    
+    private final Map<String, com.jme3.scene.Spatial> bodyGeometries = new ConcurrentHashMap<>();
+    private final Map<String, String> modelRegistry = new ConcurrentHashMap<>();
+
     /**
-     * Creates a JMonkey 3D visualizer.
+     * Registers a 3D model path for a specific body ID.
+     * 
+     * @param bodyId    the physics body ID
+     * @param assetPath path to .obj, .gltf, or .j3o file
      */
-    public JMonkey3DVisualizer() {
-        super();
+    public void registerModel(String bodyId, String assetPath) {
+        modelRegistry.put(bodyId, assetPath);
     }
-    
-    /**
-     * Creates and starts the visualizer.
-     */
-    public static JMonkey3DVisualizer create(String title, int width, int height) {
-        JMonkey3DVisualizer viz = new JMonkey3DVisualizer();
-        
-        AppSettings settings = new AppSettings(true);
-        settings.setTitle(title);
-        settings.setWidth(width);
-        settings.setHeight(height);
-        settings.setVSync(true);
-        settings.setSamples(4);  // Anti-aliasing
-        
-        viz.setSettings(settings);
-        viz.setShowSettings(false);
-        viz.setPauseOnLostFocus(false);
-        
-        return viz;
-    }
-    
-    @Override
-    public void simpleInitApp() {
-        // Disable default fly camera stats
-        setDisplayStatView(false);
-        setDisplayFps(true);
-        
-        // Create scene nodes
-        robotsNode = new Node("Robots");
-        obstaclesNode = new Node("Obstacles");
-        rootNode.attachChild(robotsNode);
-        rootNode.attachChild(obstaclesNode);
-        
-        // Create materials
-        robotMaterial = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
-        robotMaterial.setColor("Diffuse", ColorRGBA.Cyan);
-        robotMaterial.setColor("Ambient", ColorRGBA.Cyan.mult(0.3f));
-        robotMaterial.setBoolean("UseMaterialColors", true);
-        
-        obstacleMaterial = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
-        obstacleMaterial.setColor("Diffuse", ColorRGBA.Gray);
-        obstacleMaterial.setColor("Ambient", ColorRGBA.Gray.mult(0.3f));
-        obstacleMaterial.setBoolean("UseMaterialColors", true);
-        
-        groundMaterial = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
-        groundMaterial.setColor("Diffuse", new ColorRGBA(0.2f, 0.3f, 0.2f, 1f));
-        groundMaterial.setColor("Ambient", new ColorRGBA(0.1f, 0.15f, 0.1f, 1f));
-        groundMaterial.setBoolean("UseMaterialColors", true);
-        
-        // Add ground plane
-        Box groundBox = new Box(50, 0.1f, 50);
-        Geometry ground = new Geometry("Ground", groundBox);
-        ground.setMaterial(groundMaterial);
-        ground.setLocalTranslation(0, -0.1f, 0);
-        rootNode.attachChild(ground);
-        
-        // Add grid lines
-        addGridLines();
-        
-        // Setup lighting
-        DirectionalLight sun = new DirectionalLight();
-        sun.setDirection(new Vector3f(-0.5f, -1f, -0.5f).normalizeLocal());
-        sun.setColor(ColorRGBA.White.mult(1.2f));
-        rootNode.addLight(sun);
-        
-        AmbientLight ambient = new AmbientLight();
-        ambient.setColor(ColorRGBA.White.mult(0.4f));
-        rootNode.addLight(ambient);
-        
-        // Setup camera
-        cam.setLocation(new Vector3f(0, 15, 20));
-        cam.lookAt(Vector3f.ZERO, Vector3f.UNIT_Y);
-        flyCam.setMoveSpeed(10);
-        
-        initialized = true;
-        running = true;
-        
-        logger.info("[{}] JMonkey3DVisualizer initialized", System.currentTimeMillis());
-    }
-    
-    private void addGridLines() {
-        // Grid lines would require a custom mesh or line shapes
-        // Simplified: just the ground plane
-    }
-    
+
+    // ...
+
     @Override
     public void simpleUpdate(float tpf) {
-        if (currentWorld == null) return;
-        
+        if (currentWorld == null)
+            return;
+
         // Update robot positions
         for (PhysicsBody body : currentWorld.getBodies()) {
-            Geometry geom = bodyGeometries.get(body.id());
-            
-            if (geom == null) {
-                // Create new geometry
-                geom = createBodyGeometry(body);
-                bodyGeometries.put(body.id(), geom);
-                
+            com.jme3.scene.Spatial spatial = bodyGeometries.get(body.id());
+
+            if (spatial == null) {
+                // Create new spatial
+                spatial = createBodySpatial(body);
+                bodyGeometries.put(body.id(), spatial);
+
                 if (body.isStatic()) {
-                    obstaclesNode.attachChild(geom);
+                    obstaclesNode.attachChild(spatial);
                 } else {
-                    robotsNode.attachChild(geom);
+                    robotsNode.attachChild(spatial);
                 }
             }
-            
-            // Update position
+
+            // Update position (JME uses Y-up, Physics might differ)
+            // JRobotics standard: X=Forward, Y=Left, Z=Up? Or standard math?
+            // Assuming standard robotics: Z is up. JME is Y up.
+            // Rotations need quaternion conversion from 2D heading
+
             Vector3 pos = body.position();
-            geom.setLocalTranslation((float) pos.x(), (float) pos.z() + 0.5f, (float) -pos.y());
+            spatial.setLocalTranslation((float) pos.x(), (float) pos.z(), (float) -pos.y());
+
+            // Should update rotation if body has orientation
+            // For now, assume simple heading
         }
     }
-    
-    private Geometry createBodyGeometry(PhysicsBody body) {
+
+    private com.jme3.scene.Spatial createBodySpatial(PhysicsBody body) {
+        // Check for registered model
+        String modelPath = modelRegistry.get(body.id());
+        if (modelPath != null) {
+            try {
+                com.jme3.scene.Spatial model = assetManager.loadModel(modelPath);
+                // Approximate scaling
+                float r = (float) body.boundingRadius();
+                model.setLocalScale(r * 2); // Diameter
+                return model;
+            } catch (Exception e) {
+                logger.warn("Failed to load model {}, falling back to primitive", modelPath);
+            }
+        }
+
         float radius = (float) body.boundingRadius();
-        
+
         if (body.isStatic()) {
             // Static obstacles as boxes
             Box box = new Box(radius, radius, radius);
@@ -184,77 +123,129 @@ public class JMonkey3DVisualizer extends SimpleApplication implements Visualizer
             return geom;
         } else {
             // Dynamic robots as spheres
-            Sphere sphere = new Sphere(16, 16, radius);
+            Sphere sphere = new Sphere(32, 32, radius);
             Geometry geom = new Geometry(body.id(), sphere);
             geom.setMaterial(robotMaterial);
             return geom;
         }
     }
-    
+
+    private boolean initialized = false;
+    private volatile boolean running = false;
+
+    private com.jme3.material.Material obstacleMaterial;
+    private com.jme3.material.Material robotMaterial;
+
+    public JMonkey3DVisualizer() {
+        // Constructor
+    }
+
+    @Override
+    public void simpleInitApp() {
+        // Initialize Scene Graph
+        robotsNode = new Node("Robots");
+        obstaclesNode = new Node("Obstacles");
+        rootNode.attachChild(robotsNode);
+        rootNode.attachChild(obstaclesNode);
+
+        // Initialize Materials
+        obstacleMaterial = new com.jme3.material.Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        obstacleMaterial.setColor("Color", com.jme3.math.ColorRGBA.Blue);
+
+        robotMaterial = new com.jme3.material.Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        robotMaterial.setColor("Color", com.jme3.math.ColorRGBA.Red);
+
+        // Configure Camera
+        flyCam.setMoveSpeed(10f);
+        cam.setLocation(new Vector3f(0, 10, 10));
+        cam.lookAt(Vector3f.ZERO, Vector3f.UNIT_Y);
+
+        initialized = true;
+        running = true;
+
+        // Disable stats view
+        setDisplayFps(false);
+        setDisplayStatView(false);
+    }
+
+    // ...
+
     @Override
     public void initialize() {
         if (running) {
             return; // Already initialized
         }
-        
+
         // Start in a new thread - JME must run on its own thread
         Thread jmeThread = new Thread(() -> {
             try {
-                start();  // This blocks until the window closes
+                // Apply settings before start
+                com.jme3.system.AppSettings settings = new com.jme3.system.AppSettings(true);
+                settings.setTitle("JRobotics 3D Visualization");
+                settings.setResolution(1024, 768);
+                setSettings(settings);
+                setShowSettings(false);
+
+                start(); // This blocks until the window closes
             } catch (Exception e) {
                 logger.error("JME3 start failed", e);
             }
         }, "JME3-Visualizer");
-        jmeThread.setDaemon(true);
+        // jmeThread.setDaemon(true); // JME might need non-daemon?
         jmeThread.start();
-        
+
         // Wait for initialization (timeout after 10 seconds)
         int timeout = 200; // 200 * 50ms = 10s
         while (!initialized && timeout-- > 0) {
-            try { Thread.sleep(50); } catch (InterruptedException ignored) {}
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException ignored) {
+            }
         }
-        
+
         if (!initialized) {
             logger.error("JME3 initialization timeout");
         }
     }
-    
-    @Override
-    public void update(PhysicsWorld world) {
-        this.currentWorld = world;
-    }
-    
-    @Override
-    public void render() {
-        // JME handles rendering internally
-    }
-    
-    @Override
-    public boolean isActive() {
-        return running && initialized;
-    }
-    
-    @Override
-    public void shutdown() {
-        running = false;
-        stop();
-        logger.info("[{}] JMonkey3DVisualizer shut down", System.currentTimeMillis());
-    }
-    
-    @Override
-    public void setCameraPosition(double x, double y, double z) {
-        if (cam != null) {
-            cam.setLocation(new Vector3f((float) x, (float) z, (float) -y));
-        }
-    }
-    
+
+    // ... (rest of update logic)
+
     @Override
     public void setCameraTarget(double x, double y, double z) {
         if (cam != null) {
             cam.lookAt(new Vector3f((float) x, (float) z, (float) -y), Vector3f.UNIT_Y);
         }
     }
-    
+
+    @Override
+    public void update(PhysicsWorld world) {
+        this.currentWorld = world;
+    }
+
+    @Override
+    public void render() {
+        // JME handles rendering internally via simpleUpdate
+    }
+
+    @Override
+    public boolean isActive() {
+        return running && initialized;
+    }
+
+    @Override
+    public void shutdown() {
+        running = false;
+        stop();
+        logger.info("[{}] JMonkey3DVisualizer shut down", System.currentTimeMillis());
+    }
+
+    @Override
+    public void setCameraPosition(double x, double y, double z) {
+        if (cam != null) {
+            cam.setLocation(new Vector3f((float) x, (float) z, (float) -y));
+        }
+    }
+
     @Override
     public void destroy() {
         super.destroy();

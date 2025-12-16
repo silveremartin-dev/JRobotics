@@ -22,17 +22,16 @@ import java.util.List;
  * @since 2.0.0
  */
 public record LidarScan(
-    /** Timestamp when scan started in nanoseconds */
-    long timestampNanos,
-    /** All points in this scan */
-    List<LidarPoint> points,
-    /** Angular resolution in radians */
-    double angularResolution,
-    /** Minimum range in meters */
-    double minRange,
-    /** Maximum range in meters */
-    double maxRange
-) {
+        /** Timestamp when scan started in nanoseconds */
+        long timestampNanos,
+        /** All points in this scan */
+        List<LidarPoint> points,
+        /** Angular resolution in radians */
+        double angularResolution,
+        /** Minimum range in meters */
+        double minRange,
+        /** Maximum range in meters */
+        double maxRange) {
     /**
      * Creates an empty LIDAR scan.
      * 
@@ -41,7 +40,7 @@ public record LidarScan(
     public static LidarScan empty() {
         return new LidarScan(System.nanoTime(), Collections.emptyList(), 0, 0, 0);
     }
-    
+
     /**
      * Gets the number of points in this scan.
      * 
@@ -50,7 +49,7 @@ public record LidarScan(
     public int getPointCount() {
         return points.size();
     }
-    
+
     /**
      * Gets the point at the specified index.
      * 
@@ -60,7 +59,7 @@ public record LidarScan(
     public LidarPoint getPoint(int index) {
         return points.get(index);
     }
-    
+
     /**
      * Finds the nearest point in the scan.
      * 
@@ -71,7 +70,7 @@ public record LidarScan(
                 .min((a, b) -> Double.compare(a.distance(), b.distance()))
                 .orElse(null);
     }
-    
+
     /**
      * Finds the farthest point in the scan.
      * 
@@ -82,7 +81,7 @@ public record LidarScan(
                 .max((a, b) -> Double.compare(a.distance(), b.distance()))
                 .orElse(null);
     }
-    
+
     /**
      * Filters points within a given distance.
      * 
@@ -95,7 +94,7 @@ public record LidarScan(
                 .toList();
         return new LidarScan(timestampNanos, filtered, angularResolution, minRange, maxDistance);
     }
-    
+
     /**
      * Filters points within an azimuth range.
      * 
@@ -108,5 +107,14 @@ public record LidarScan(
                 .filter(p -> p.azimuth() >= minAzimuth && p.azimuth() <= maxAzimuth)
                 .toList();
         return new LidarScan(timestampNanos, filtered, angularResolution, minRange, maxRange);
+    }
+
+    /**
+     * Gets the list of points.
+     * 
+     * @return the points
+     */
+    public List<LidarPoint> getPoints() {
+        return points;
     }
 }

@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-**Status**: v2.0.0-SNAPSHOT | **Platform**: Java 21+ | **License**: MIT
+**Status**: v2.5.0-SNAPSHOT | **Platform**: Java 21+ | **License**: MIT
 
 ---
 
@@ -117,53 +117,76 @@
 
 ---
 
-## 📋 SUGGESTED FUTURE FEATURES
+### Phase 11: Web Dashboard (v2.2)
 
-### High Priority (v2.1)
+| Feature | Status | Details |
+|---------|--------|---------|
+| WebSocket Server | ✅ | Real-time telemetry |
+| REST API | ✅ | /api/status, /api/config |
+| Single Page App | ✅ | HTML/JS Dashboard |
 
-| Feature | Complexity | Description |
+### Phase 12: Advanced Features (v2.1)
+
+| Feature | Status | Details |
+|---------|--------|---------|
+| Path Planning | ✅ | RRT, A*, DWA |
+| SLAM (Basic) | ✅ | Occupancy Grid |
+| PID Control | ✅ | With anti-windup |
+| Spatial Index | ✅ | Quadtree/Octree |
+
+### Phase 13: Polish & Hardware (v2.3)
+
+| Feature | Status | Details |
+|---------|--------|---------|
+| 3D Model Loading | ✅ | .obj/.gltf support |
+| Real HAL | ✅ | Pi4J Provider |
+| Code Optimization | ✅ | Verified logs |
+
+### Phase 14: AI & Manipulation (v2.4)
+
+| Feature | Status | Details |
+|---------|--------|---------|
+| Computer Vision | ✅ | OpenCV (Stubbed) |
+| Voice Commands | ✅ | Vosk Integration |
+| Arm Kinematics | ✅ | DH Params, Inverse Kin. |
+
+### Phase 15: Connectivity & Ops (v2.5)
+
+| Feature | Status | Details |
+|---------|--------|---------|
+| MQTT Client | ✅ | Paho Integration |
+| FastSLAM | ✅ | Particle Filter |
+| Swarm Control | ✅ | Flocking Behaviors |
+
+---
+
+## 🔮 FUTURE ROADMAP (v3.0+)
+
+### High Priority
+
+| Feature | Difficulty | Description |
 |---------|------------|-------------|
-| **Real HAL Integration** | High | GPIO/I2C for Raspberry Pi |
-| **ROS2 Bridge (rcljava)** | High | Full rcljava integration |
-| **SLAM (GMapping)** | High | Simultaneous Localization & Mapping |
-| **Particle Filter** | Medium | Probabilistic localization |
-| **RRT/RRT*** | Medium | Sampling-based path planning |
+| **Native CV** | High | Restore full OpenCV with GPU accel |
+| **ROS2 Bridge** | High | Full rcljava integration for ROS2 Humble |
+| **Digital Twin** | High | Cloud synchronization with AWS IoT |
 
-### Medium Priority (v2.2)
+### Medium Priority
 
-| Feature | Complexity | Description |
+| Feature | Difficulty | Description |
 |---------|------------|-------------|
-| **Spatial Partitioning** | Medium | Quadtree/Octree for physics |
-| **Multi-robot Coordination** | High | Formation control |
-| **Collision Avoidance** | Medium | Dynamic obstacle avoidance |
-| **WebSocket Dashboard** | Medium | Browser monitoring |
-| **REST API** | Medium | Remote configuration |
-| **PID Tuning UI** | Low | Visual PID tuning |
+| **Reinforcement Learning** | High | Gym-like training environments |
+| **Legged Locomotion** | High | Hexapod/Quadruped gaits |
+| **Visual SLAM** | Very High | feature-based mapping (ORB-SLAM) |
 
-### New Feature Suggestions (v2.3+)
+### New Feature Suggestions
 
-| Feature | Complexity | Description |
-|---------|------------|-------------|
-| **Computer Vision** | High | OpenCV integration |
-| **Object Detection** | High | DL4J/ONNX models |
-| **Voice Commands** | Medium | Speech recognition |
-| **Arm Kinematics** | High | Forward/Inverse kinematics |
-| **Leg Locomotion** | High | Walking robots |
-| **Swarm Algorithms** | High | Collective behavior |
-| **Reinforcement Learning** | High | Gym-like environments |
-| **Digital Twin** | High | Cloud sync |
-| **VR Teleoperation** | High | VR headset control |
-| **AR Overlay** | High | Mixed reality debugging |
-| **Gazebo Integration** | High | Gazebo simulator bridge |
-| **Unity Plugin** | High | Unity3D game engine |
-| **MQTT Support** | Low | IoT messaging |
-| **CAN Bus** | Medium | Automotive/industrial |
-| **EtherCAT** | High | Real-time fieldbus |
-| **Safety Controller** | Medium | Fail-safe logic |
-| **Battery Monitor** | Low | Power management |
-| **Thermal Monitor** | Low | Overheat protection |
-| **Model Predictive Control** | High | Advanced control |
-| **Trajectory Optimization** | High | Smooth path generation |
+| Feature | Description |
+|---------|-------------|
+| **AR Debugging** | Augmented Reality overlay for sensor data |
+| **VR Teleop** | Virtual Reality control interface |
+| **Unity Plugin** | Game engine integration |
+| **CAN Bus** | Industrial automation protocol |
+| **EtherCAT** | Real-time fieldbus support |
 
 ---
 

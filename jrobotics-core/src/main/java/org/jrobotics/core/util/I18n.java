@@ -132,7 +132,7 @@ public final class I18n {
         return new Locale[] {
                 Locale.ENGLISH,
                 Locale.FRENCH,
-                new Locale("es"),
+                Locale.of("es"),
                 Locale.GERMAN
         };
     }

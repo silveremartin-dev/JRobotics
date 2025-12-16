@@ -32,5 +32,9 @@
             <groupId>org.jrobotics</groupId>
             <artifactId>jrobotics-sensor</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.jrobotics</groupId>
+            <artifactId>jrobotics-simulation</artifactId>
+        </dependency>
     </dependencies>
 </project>

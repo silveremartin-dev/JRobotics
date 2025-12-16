@@ -28,5 +28,22 @@
             <groupId>org.jrobotics</groupId>
             <artifactId>jrobotics-core</artifactId>
         </dependency>
+
+        <!-- Pi4J V2 (Real Hardware) -->
+        <dependency>
+            <groupId>com.pi4j</groupId>
+            <artifactId>pi4j-core</artifactId>
+            <version>2.6.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.pi4j</groupId>
+            <artifactId>pi4j-plugin-raspberrypi</artifactId>
+            <version>2.6.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.pi4j</groupId>
+            <artifactId>pi4j-plugin-pigpio</artifactId>
+            <version>2.6.0</version>
+        </dependency>
     </dependencies>
 </project>

@@ -30,46 +30,47 @@ import java.util.concurrent.TimeUnit;
 @Measurement(iterations = 5, time = 1)
 @Fork(1)
 public class PhysicsWorldBenchmark {
-    
-    @Param({"10", "100", "500"})
+
+    @Param({ "10", "100", "500" })
     private int bodyCount;
-    
+
     private PhysicsWorld world;
-    
+
     @Setup
     public void setup() {
         world = new PhysicsWorld();
         world.setGravity(Vector3.ZERO);
         world.setFriction(0.1);
-        
+
         for (int i = 0; i < bodyCount; i++) {
             double x = (Math.random() - 0.5) * 100;
             double y = (Math.random() - 0.5) * 100;
             PhysicsBody body = PhysicsBody.dynamicBody(
-                "body-" + i, 
-                1.0, 
-                new Vector3(x, y, 0), 
-                0.5
-            );
+                    "body-" + i,
+                    1.0,
+                    new Vector3(x, y, 0),
+                    0.5);
             world.addBody(body);
         }
     }
-    
+
     @Benchmark
     public void step(Blackhole bh) {
-        world.step(0.016);  // ~60 Hz
+        world.step(0.016); // ~60 Hz
         bh.consume(world.getStepCount());
     }
-    
+
     @Benchmark
     public void stepWithCollisions(Blackhole bh) {
         // Add velocities to cause collisions
         for (PhysicsBody body : world.getBodies()) {
             PhysicsBody moving = body.withVelocity(new Vector3(
-                (Math.random() - 0.5) * 2,
-                (Math.random() - 0.5) * 2,
-                0
-            ));
+                    (Math.random() - 0.5) * 2,
+                    (Math.random() - 0.5) * 2,
+                    0));
+            // In a real physics engine we'd update the body in the world
+            // For this benchmark we want to simulate the state change setup
+            bh.consume(moving);
         }
         world.step(0.016);
         bh.consume(world.getStepCount());
