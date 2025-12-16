@@ -73,6 +73,43 @@ public class NetworkMessage implements Message {
     }
     
     /**
+     * Creates a message with payload.
+     * 
+     * @param type the message type
+     * @param sourceId the source ID
+     * @param targetId the target ID
+     * @param payload the payload
+     * @return the message
+     */
+    public static NetworkMessage create(MessageType type, String sourceId, String targetId, Map<String, Object> payload) {
+        return new NetworkMessage(type, sourceId, targetId, payload);
+    }
+    
+    /**
+     * Creates a message without payload.
+     * 
+     * @param type the message type
+     * @param sourceId the source ID
+     * @param targetId the target ID
+     * @return the message
+     */
+    public static NetworkMessage create(MessageType type, String sourceId, String targetId) {
+        return new NetworkMessage(type, sourceId, targetId, null);
+    }
+    
+    /**
+     * Creates a broadcast message with payload.
+     * 
+     * @param type the message type
+     * @param sourceId the source ID
+     * @param payload the payload
+     * @return the message
+     */
+    public static NetworkMessage broadcast(MessageType type, String sourceId, Map<String, Object> payload) {
+        return new NetworkMessage(type, sourceId, null, payload);
+    }
+    
+    /**
      * Creates a command message.
      * 
      * @param sourceId the source ID

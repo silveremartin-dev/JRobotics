@@ -58,6 +58,10 @@ public enum MessageType {
     STATUS_REQUEST,
     /** Status response */
     STATUS_RESPONSE,
+    /** Generic request */
+    REQUEST,
+    /** Generic response */
+    RESPONSE,
     
     // Custom
     /** User-defined message type */
