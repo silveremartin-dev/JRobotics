@@ -61,6 +61,8 @@
         <module>jrobotics-bridge</module>
         <module>jrobotics-benchmark</module>
         <module>jrobotics-demo</module>
+        <module>jrobotics-cli</module>
+        <module>jrobotics-editor</module>
     </modules>
 
     <properties>
@@ -80,6 +82,7 @@
         <lombok.version>1.18.30</lombok.version>
         <mockito.version>5.8.0</mockito.version>
         <jmh.version>1.37</jmh.version>
+        <djl.version>0.26.0</djl.version>
 
         <!-- Plugin Versions -->
         <maven-compiler-plugin.version>3.12.1</maven-compiler-plugin.version>
@@ -187,6 +190,24 @@
                 <groupId>org.openjdk.jmh</groupId>
                 <artifactId>jmh-generator-annprocess</artifactId>
                 <version>${jmh.version}</version>
+            </dependency>
+
+            <!-- Deep Java Library (DJL) -->
+            <dependency>
+                <groupId>ai.djl</groupId>
+                <artifactId>api</artifactId>
+                <version>${djl.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ai.djl.pytorch</groupId>
+                <artifactId>pytorch-engine</artifactId>
+                <version>${djl.version}</version>
+                <scope>runtime</scope>
+            </dependency>
+            <dependency>
+                <groupId>ai.djl.pytorch</groupId>
+                <artifactId>pytorch-model-zoo</artifactId>
+                <version>${djl.version}</version>
             </dependency>
 
             <!-- Internal Dependencies -->

@@ -13,8 +13,6 @@ import org.jrobotics.processor.AbstractProcessor;
 import org.jrobotics.processor.ProcessorException;
 import org.jrobotics.sensor.range.LidarScan;
 import org.jrobotics.sensor.range.LidarPoint;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;

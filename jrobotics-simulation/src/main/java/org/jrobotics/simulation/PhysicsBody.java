@@ -9,6 +9,8 @@
  */
 package org.jrobotics.simulation;
 
+import org.jrobotics.core.math.Vector3;
+
 /**
  * Represents the physical properties of a simulated body.
  * 
@@ -18,58 +20,57 @@ package org.jrobotics.simulation;
  * @since 2.0.0
  */
 public record PhysicsBody(
-    /** Unique identifier */
-    String id,
-    /** Mass in kg */
-    double mass,
-    /** Position in world coordinates */
-    Vector3 position,
-    /** Linear velocity in m/s */
-    Vector3 velocity,
-    /** Orientation in radians (yaw, pitch, roll) */
-    Vector3 orientation,
-    /** Angular velocity in rad/s */
-    Vector3 angularVelocity,
-    /** Bounding radius for collision detection */
-    double boundingRadius,
-    /** If true, body is static (doesn't move) */
-    boolean isStatic
-) {
+        /** Unique identifier */
+        String id,
+        /** Mass in kg */
+        double mass,
+        /** Position in world coordinates */
+        Vector3 position,
+        /** Linear velocity in m/s */
+        Vector3 velocity,
+        /** Orientation in radians (yaw, pitch, roll) */
+        Vector3 orientation,
+        /** Angular velocity in rad/s */
+        Vector3 angularVelocity,
+        /** Bounding radius for collision detection */
+        double boundingRadius,
+        /** If true, body is static (doesn't move) */
+        boolean isStatic) {
     /**
      * Creates a static body (e.g., obstacle).
      */
     public static PhysicsBody staticBody(String id, Vector3 position, double radius) {
         return new PhysicsBody(id, 0, position, Vector3.ZERO, Vector3.ZERO, Vector3.ZERO, radius, true);
     }
-    
+
     /**
      * Creates a dynamic body (e.g., robot).
      */
     public static PhysicsBody dynamicBody(String id, double mass, Vector3 position, double radius) {
         return new PhysicsBody(id, mass, position, Vector3.ZERO, Vector3.ZERO, Vector3.ZERO, radius, false);
     }
-    
+
     /**
      * Returns a copy with updated position.
      */
     public PhysicsBody withPosition(Vector3 newPosition) {
         return new PhysicsBody(id, mass, newPosition, velocity, orientation, angularVelocity, boundingRadius, isStatic);
     }
-    
+
     /**
      * Returns a copy with updated velocity.
      */
     public PhysicsBody withVelocity(Vector3 newVelocity) {
         return new PhysicsBody(id, mass, position, newVelocity, orientation, angularVelocity, boundingRadius, isStatic);
     }
-    
+
     /**
      * Returns a copy with updated orientation.
      */
     public PhysicsBody withOrientation(Vector3 newOrientation) {
         return new PhysicsBody(id, mass, position, velocity, newOrientation, angularVelocity, boundingRadius, isStatic);
     }
-    
+
     /**
      * Checks for collision with another body using sphere-sphere intersection.
      */

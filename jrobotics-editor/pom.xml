@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  JRobotics Visual Editor Module
+  
+  Copyright (c) 2025 Silvère Martin-Michiellot <silvere.martin@gmail.com>
+  Co-authored by Gemini AI Assistant
+  
+  Licensed under the MIT License.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.jrobotics</groupId>
+        <artifactId>jrobotics-parent</artifactId>
+        <version>2.0.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>jrobotics-editor</artifactId>
+    <packaging>jar</packaging>
+
+    <name>JRobotics Visual Editor</name>
+    <description>Drag-and-drop robot configuration builder</description>
+
+    <properties>
+        <javafx.version>21</javafx.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.jrobotics</groupId>
+            <artifactId>jrobotics-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jrobotics</groupId>
+            <artifactId>jrobotics-robot</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jrobotics</groupId>
+            <artifactId>jrobotics-network</artifactId>
+        </dependency>
+        <!-- JavaFX -->
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-controls</artifactId>
+            <version>${javafx.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-fxml</artifactId>
+            <version>${javafx.version}</version>
+        </dependency>
+        <!-- Logback -->
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.openjfx</groupId>
+                <artifactId>javafx-maven-plugin</artifactId>
+                <version>0.0.8</version>
+                <configuration>
+                    <mainClass>org.jrobotics.editor.RobotEditor</mainClass>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

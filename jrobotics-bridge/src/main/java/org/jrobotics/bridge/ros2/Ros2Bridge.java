@@ -12,8 +12,6 @@ package org.jrobotics.bridge.ros2;
 import id.jros2client.JRos2Client;
 import id.jros2client.JRos2ClientFactory;
 import id.jrosmessages.Message;
-import id.jros2client.impl.JRos2ClientImpl;
-import io.opentelemetry.api.GlobalOpenTelemetry;
 import org.jrobotics.bridge.RoboticsBridge;
 import org.jrobotics.core.LifecycleException;
 import org.jrobotics.core.LifecycleState;
@@ -23,7 +21,7 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Consumer;
 import java.util.function.Consumer;
 
 /**
@@ -133,6 +131,7 @@ public class Ros2Bridge implements RoboticsBridge {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public boolean publish(String topic, Object message) {
         if (!connected || client == null)
             return false;
@@ -140,7 +139,18 @@ public class Ros2Bridge implements RoboticsBridge {
         // This requires the message object to be a valid id.jrosmessages.Message
         if (message instanceof Message) {
             try {
-                client.publish(topic, (Class<? extends Message>) message.getClass(), (Message) message);
+                // Wrap message in a Publisher as expected by JRosClient
+                // We use SubmissionPublisher (standard Java Flow API)
+                // Use TopicSubmissionPublisher which combines Topic info and
+                // SubmissionPublisher capabilities
+                Class<Message> msgClass = (Class<Message>) message.getClass();
+                id.jrosclient.TopicSubmissionPublisher<Message> publisher = new id.jrosclient.TopicSubmissionPublisher<>(
+                        msgClass, topic);
+
+                client.publish(publisher);
+                publisher.submit((Message) message);
+                publisher.close();
+
                 return true;
             } catch (Exception e) {
                 logger.error("Failed to publish ROS2 message", e);
@@ -153,21 +163,27 @@ public class Ros2Bridge implements RoboticsBridge {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <T> void subscribe(String topic, Class<T> type, Consumer<T> handler) {
         if (!connected || client == null) {
             logger.warn("Cannot subscribe: ROS2 client not connected");
             return;
         }
 
-        // We need to map generic T to JRosMessage type
         if (Message.class.isAssignableFrom(type)) {
-            Class<? extends Message> msgType = (Class<? extends Message>) type;
-            client.subscribe(topic, msgType, (msg) -> {
-                handler.accept((T) msg);
-            });
+            Class<Message> msgType = (Class<Message>) type;
+
+            // Create a TopicSubscriber that forwards to the handler
+            id.jrosclient.TopicSubscriber<Message> subscriber = new id.jrosclient.TopicSubscriber<>(msgType, topic) {
+                public void onNext(Message item) {
+                    handler.accept((T) item);
+                }
+            };
+
+            client.subscribe(subscriber);
             logger.info("Subscribed to ROS2 topic: {}", topic);
         } else {
-            logger.error("Unsupported message type for ROS2: {}", type.getName());
+            logger.warn("Unsupported message type for ROS2: {}", type.getName());
         }
     }
 

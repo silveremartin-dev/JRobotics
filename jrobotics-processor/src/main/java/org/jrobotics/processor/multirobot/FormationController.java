@@ -9,7 +9,7 @@
  */
 package org.jrobotics.processor.multirobot;
 
-import org.jrobotics.simulation.Vector3;
+import org.jrobotics.core.math.Vector3;
 
 import java.util.ArrayList;
 import java.util.HashMap;

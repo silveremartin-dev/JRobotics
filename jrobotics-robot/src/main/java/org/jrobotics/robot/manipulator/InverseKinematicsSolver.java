@@ -9,7 +9,7 @@
  */
 package org.jrobotics.robot.manipulator;
 
-import org.jrobotics.simulation.Vector3;
+import org.jrobotics.core.math.Vector3;
 
 /**
  * Interface for inverse kinematics solvers.

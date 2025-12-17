@@ -12,7 +12,7 @@ package org.jrobotics.robot.manipulator;
 import org.jrobotics.core.Capability;
 import org.jrobotics.core.math.DenavitHartenberg;
 import org.jrobotics.robot.AbstractRobot;
-import org.jrobotics.simulation.Vector3;
+import org.jrobotics.core.math.Vector3;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -9,6 +9,8 @@
  */
 package org.jrobotics.simulation;
 
+import org.jrobotics.core.math.Vector3;
+
 import java.util.ArrayList;
 import java.util.List;
 

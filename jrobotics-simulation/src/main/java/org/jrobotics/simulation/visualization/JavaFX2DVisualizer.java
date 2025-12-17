@@ -7,7 +7,7 @@
  * Licensed under the MIT License.
  * See LICENSE file in the project root for full license information.
  */
-package org.jrobotics.visualization;
+package org.jrobotics.simulation.visualization;
 
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
@@ -21,8 +21,8 @@ import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import org.jrobotics.simulation.PhysicsBody;
 import org.jrobotics.simulation.PhysicsWorld;
-import org.jrobotics.simulation.Vector3;
-import org.jrobotics.simulation.visualization.Visualizer;
+import org.jrobotics.core.math.Vector3;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

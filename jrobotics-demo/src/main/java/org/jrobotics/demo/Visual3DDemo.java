@@ -10,8 +10,9 @@
 package org.jrobotics.demo;
 
 import org.jrobotics.simulation.*;
+import org.jrobotics.core.math.Vector3;
 import org.jrobotics.simulation.environment.EnvironmentBuilder;
-import org.jrobotics.visualization.JMonkey3DVisualizer;
+import org.jrobotics.simulation.visualization.JMonkey3DVisualizer;
 
 /**
  * 3D Visual demo using JMonkeyEngine.

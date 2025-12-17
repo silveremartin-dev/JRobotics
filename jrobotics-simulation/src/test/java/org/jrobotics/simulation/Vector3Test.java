@@ -9,6 +9,7 @@
  */
 package org.jrobotics.simulation;
 
+import org.jrobotics.core.math.Vector3;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

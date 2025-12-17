@@ -9,6 +9,7 @@
  */
 package org.jrobotics.benchmark;
 
+import org.jrobotics.core.math.Vector3;
 import org.jrobotics.simulation.*;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;

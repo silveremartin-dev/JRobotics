@@ -38,5 +38,33 @@
         <!-- Note: jme3-bullet and jme3-bullet-native are not available in Maven Central.
              Using custom simple physics implementation instead. 
              For advanced physics, users can integrate their own physics engine. -->
+        <!-- JMonkeyEngine (Full support for Visualizer) -->
+        <dependency>
+            <groupId>org.jmonkeyengine</groupId>
+            <artifactId>jme3-desktop</artifactId>
+            <version>3.6.1-stable</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jmonkeyengine</groupId>
+            <artifactId>jme3-lwjgl3</artifactId>
+            <version>3.6.1-stable</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jmonkeyengine</groupId>
+            <artifactId>jme3-plugins</artifactId>
+            <version>3.6.1-stable</version>
+        </dependency>
+
+        <!-- JavaFX (For 2D Visualizer) -->
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-controls</artifactId>
+            <version>21</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-graphics</artifactId>
+            <version>21</version>
+        </dependency>
     </dependencies>
 </project>

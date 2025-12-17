@@ -9,12 +9,19 @@
  */
 package org.jrobotics.simulation;
 
+import org.jrobotics.core.math.Vector3;
+
 /**
  * Interface for pluggable physics engine implementations.
  * 
- * <p>Allows integration with external physics libraries like dyn4j, JBullet, etc.</p>
+ * <p>
+ * Allows integration with external physics libraries like dyn4j, JBullet, etc.
+ * </p>
  * 
- * <p><b>Example usage:</b></p>
+ * <p>
+ * <b>Example usage:</b>
+ * </p>
+ * 
  * <pre>{@code
  * // Use default implementation
  * PhysicsEngine engine = new DefaultPhysicsEngine();
@@ -29,36 +36,36 @@ package org.jrobotics.simulation;
  * @since 2.0.0
  */
 public interface PhysicsEngine {
-    
+
     /**
      * Gets the engine name.
      * 
      * @return the name (e.g., "JRobotics", "dyn4j", "JBullet")
      */
     String getName();
-    
+
     /**
      * Gets the engine version.
      * 
      * @return the version string
      */
     String getVersion();
-    
+
     /**
      * Creates a new physics world.
      * 
      * @return a new world instance
      */
     PhysicsWorld createWorld();
-    
+
     /**
      * Steps the simulation forward.
      * 
-     * @param world the world to step
+     * @param world     the world to step
      * @param deltaTime the time step in seconds
      */
     void step(PhysicsWorld world, double deltaTime);
-    
+
     /**
      * Performs collision detection.
      * 
@@ -66,31 +73,33 @@ public interface PhysicsEngine {
      * @return list of collision pairs
      */
     java.util.List<CollisionPair> detectCollisions(PhysicsWorld world);
-    
+
     /**
      * Resolves collisions with impulse response.
      * 
-     * @param world the world
+     * @param world      the world
      * @param collisions the collisions to resolve
      */
     void resolveCollisions(PhysicsWorld world, java.util.List<CollisionPair> collisions);
-    
+
     /**
      * Checks if the engine supports 3D physics.
      * 
      * @return true if 3D is supported
      */
     boolean supports3D();
-    
+
     /**
      * Checks if the engine supports continuous collision detection.
      * 
      * @return true if CCD is supported
      */
     boolean supportsCCD();
-    
+
     /**
      * Collision pair result.
      */
-    record CollisionPair(PhysicsBody bodyA, PhysicsBody bodyB, Vector3 contactPoint, Vector3 normal, double penetration) {}
+    record CollisionPair(PhysicsBody bodyA, PhysicsBody bodyB, Vector3 contactPoint, Vector3 normal,
+            double penetration) {
+    }
 }

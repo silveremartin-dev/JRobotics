@@ -7,7 +7,7 @@
  * Licensed under the MIT License.
  * See LICENSE file in the project root for full license information.
  */
-package org.jrobotics.visualization;
+package org.jrobotics.simulation.visualization;
 
 import com.jme3.app.SimpleApplication;
 
@@ -19,8 +19,8 @@ import com.jme3.scene.shape.Sphere;
 
 import org.jrobotics.simulation.PhysicsBody;
 import org.jrobotics.simulation.PhysicsWorld;
-import org.jrobotics.simulation.Vector3;
-import org.jrobotics.simulation.visualization.Visualizer;
+import org.jrobotics.core.math.Vector3;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
