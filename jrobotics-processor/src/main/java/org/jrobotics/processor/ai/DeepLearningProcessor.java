@@ -22,7 +22,6 @@ import ai.djl.modality.cv.translator.ImageClassificationTranslator;
 import ai.djl.repository.zoo.Criteria;
 import ai.djl.repository.zoo.ModelNotFoundException;
 import ai.djl.repository.zoo.ZooModel;
-import ai.djl.translate.TranslateException;
 import ai.djl.translate.Translator;
 import org.jrobotics.processor.AbstractProcessor;
 import org.slf4j.Logger;

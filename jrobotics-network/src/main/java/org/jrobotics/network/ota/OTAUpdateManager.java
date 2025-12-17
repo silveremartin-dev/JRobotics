@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.nio.file.*;
 import java.security.MessageDigest;
@@ -89,7 +90,7 @@ public class OTAUpdateManager {
                 status = UpdateStatus.CHECKING;
                 notifyListener("Checking for updates...");
 
-                URL url = new URL(updateServerUrl + "/version.json");
+                URL url = URI.create(updateServerUrl + "/version.json").toURL();
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("GET");
                 conn.setConnectTimeout(10000);
@@ -220,7 +221,7 @@ public class OTAUpdateManager {
     }
 
     private boolean downloadFile(String urlStr, Path destination) throws IOException {
-        URL url = new URL(urlStr);
+        URL url = URI.create(urlStr).toURL();
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         int contentLength = conn.getContentLength();
 

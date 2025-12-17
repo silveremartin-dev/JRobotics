@@ -43,11 +43,20 @@ public class SwarmLearner implements ReinforcementLearningAgent {
 
     @Override
     public void save(String path) {
-        logger.info("Saving swarm model to {}", path);
+        logger.info("[{}] Saving swarm model to {}", id, path);
     }
 
     @Override
     public void load(String path) {
-        logger.info("Loading swarm model from {}", path);
+        logger.info("[{}] Loading swarm model from {}", id, path);
+    }
+
+    /**
+     * Gets the learner ID.
+     * 
+     * @return the learner ID
+     */
+    public String getId() {
+        return id;
     }
 }

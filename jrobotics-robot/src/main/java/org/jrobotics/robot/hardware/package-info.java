@@ -1,0 +1,29 @@
+/*
+ * JRobotics v2 - World-Class General Purpose Robotics API
+ * 
+ * Copyright (c) 2025 Silvère Martin-Michiellot <silvere.martin@gmail.com>
+ * Co-authored by Gemini AI Assistant
+ * 
+ * Licensed under the MIT License.
+ * See LICENSE file in the project root for full license information.
+ */
+
+/**
+ * Robot Hardware Abstraction Package.
+ *
+ * <p>
+ * Provides adapters for specific robot hardware platforms:
+ * </p>
+ * <ul>
+ * <li>{@link org.jrobotics.robot.hardware.TurtleBot3Adapter} - TurtleBot3</li>
+ * <li>{@link org.jrobotics.robot.hardware.Create3Adapter} - iRobot Create
+ * 3</li>
+ * <li>{@link org.jrobotics.robot.hardware.RaspberryPiRobotAdapter} - RPi-based
+ * robots</li>
+ * <li>{@link org.jrobotics.robot.hardware.ArduinoRobotAdapter} - Arduino-based
+ * robots</li>
+ * </ul>
+ *
+ * @since 2.0.0
+ */
+package org.jrobotics.robot.hardware;

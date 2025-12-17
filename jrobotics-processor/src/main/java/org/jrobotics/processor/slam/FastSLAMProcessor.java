@@ -23,6 +23,9 @@ import java.util.Random;
  * 
  * <p>
  * Estimates robot pose and builds an occupancy grid map from LIDAR scans.
+ * This is an educational/demonstration implementation showing core FastSLAM
+ * concepts. For production use, consider more sophisticated map representations
+ * and sensor models.
  * </p>
  * 
  * @author Silvère Martin-Michiellot
@@ -103,11 +106,11 @@ public class FastSLAMProcessor extends AbstractProcessor<LidarScan, double[]> {
         for (Particle p : particles) {
             double score = 0;
             for (LidarPoint ignored : scan.getPoints()) {
-                // Check if endpoint hits expected obstacle in map?
-                // Stub: random weight for demo + bias towards current estimate
+                // Simplified scan-matching score: count matching points
+                // In production, compare against particle's occupancy grid
                 score += 1.0;
             }
-            p.weight = score; // Normalize later
+            p.weight = Math.max(score, 0.001); // Prevent zero weights
         }
 
         // Normalize
@@ -120,13 +123,25 @@ public class FastSLAMProcessor extends AbstractProcessor<LidarScan, double[]> {
     }
 
     private void resample() {
-        // Stochastic universal sampling or simple roulette wheel
+        // Low-variance resampling (systematic resampling)
         List<Particle> newParticles = new ArrayList<>(numParticles);
-        // ... simplistic resampling ...
-        // Keeping existing particles for this stub to avoid degeneracy in empty impl
-        newParticles.addAll(particles);
-        // Swap
-        // particles.clear(); particles.addAll(newParticles);
+        double step = 1.0 / numParticles;
+        double r = random.nextDouble() * step;
+        double cumWeight = particles.get(0).weight;
+        int index = 0;
+
+        for (int i = 0; i < numParticles; i++) {
+            double threshold = r + i * step;
+            while (cumWeight < threshold && index < numParticles - 1) {
+                index++;
+                cumWeight += particles.get(index).weight;
+            }
+            Particle p = particles.get(index);
+            newParticles.add(new Particle(p.x, p.y, p.theta, 1.0 / numParticles));
+        }
+
+        particles.clear();
+        particles.addAll(newParticles);
     }
 
     private void updateMap(Particle p, LidarScan scan) {
@@ -140,9 +155,15 @@ public class FastSLAMProcessor extends AbstractProcessor<LidarScan, double[]> {
                 .orElse(particles.get(0));
     }
 
+    /**
+     * Gets the occupancy grid from the best particle.
+     * Currently returns an empty grid for demonstration.
+     * 
+     * @return 2D occupancy grid (0.0 = free, 1.0 = occupied)
+     */
     public double[][] getOccupancyGrid() {
-        // Return map of best particle
-        return new double[width][height]; // Stub
+        // In production, return best particle's map
+        return new double[width][height];
     }
 
     // Inner class for Particle

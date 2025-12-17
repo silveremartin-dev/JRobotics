@@ -15,8 +15,6 @@ import ai.djl.modality.cv.ImageFactory;
 import ai.djl.modality.cv.output.BoundingBox;
 import ai.djl.modality.cv.output.DetectedObjects;
 import ai.djl.modality.cv.output.Rectangle;
-import ai.djl.modality.cv.transform.Resize;
-import ai.djl.modality.cv.transform.ToTensor;
 import ai.djl.modality.cv.translator.YoloV5Translator;
 import ai.djl.inference.Predictor;
 import ai.djl.repository.zoo.Criteria;
@@ -141,7 +139,8 @@ public class ObjectDetectionProcessor extends AbstractProcessor<Image, List<Obje
 
         model = criteria.loadModel();
         predictor = model.newPredictor();
-        logger.info("YOLOv5 model loaded successfully");
+        logger.info("YOLOv5 model loaded successfully (input: {}x{}, NMS threshold: {})", 
+                inputWidth, inputHeight, nmsThreshold);
     }
 
     /**

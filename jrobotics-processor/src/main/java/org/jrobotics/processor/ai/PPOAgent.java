@@ -268,6 +268,11 @@ public class PPOAgent extends AbstractProcessor<double[], double[]> implements R
                 // Value loss
                 double valueLoss = 0.5 * Math.pow(newValue - tr.returnValue, 2);
 
+                // Log losses periodically for diagnostics
+                if (epoch == 0 && trajectoryBuffer.indexOf(tr) == 0) {
+                    logger.debug("PPO update - Policy loss: {}, Value loss: {}", policyLoss, valueLoss);
+                }
+
                 // Simplified gradient update (actor)
                 updateActor(tr.state, tr.action, tr.advantage, ratio);
 
