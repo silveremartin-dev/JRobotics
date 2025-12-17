@@ -9,18 +9,12 @@
  */
 package org.jrobotics.bridge.cloud;
 
-import com.amazonaws.services.iot.client.AWSIotException;
-import com.amazonaws.services.iot.client.AWSIotMqttClient;
-import com.amazonaws.services.iot.client.AWSIotQos;
-import com.amazonaws.services.iot.client.AWSIotTimeoutException;
 import org.jrobotics.bridge.RoboticsBridge;
 import org.jrobotics.core.LifecycleException;
 import org.jrobotics.core.LifecycleState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 /**
@@ -39,22 +33,20 @@ public class DigitalTwinAgent implements RoboticsBridge {
 
     private static final Logger logger = LoggerFactory.getLogger(DigitalTwinAgent.class);
 
-    private final String clientEndpoint;
-    private final String clientId;
     private final String thingName;
 
     // AWS Credentials (simplified for demo - ideally load from KeyStore)
     private final String certificateFile;
     private final String privateKeyFile;
 
-    private AWSIotMqttClient client;
+    // private AWSIotMqttClient client;
     private LifecycleState state = LifecycleState.CREATED;
     private boolean connected = false;
 
     public DigitalTwinAgent(String clientEndpoint, String clientId, String thingName, String certificateFile,
             String privateKeyFile) {
-        this.clientEndpoint = clientEndpoint;
-        this.clientId = clientId;
+        // this.clientEndpoint = clientEndpoint;
+        // this.clientId = clientId;
         this.thingName = thingName;
         this.certificateFile = certificateFile;
         this.privateKeyFile = privateKeyFile;
@@ -99,13 +91,14 @@ public class DigitalTwinAgent implements RoboticsBridge {
 
     @Override
     public void stop() throws LifecycleException {
-        if (client != null) {
-            try {
-                // client.disconnect();
-            } catch (Exception e) {
-                logger.error("Error disconnecting", e);
-            }
+        // if (client != null) {
+        try {
+            // client.disconnect();
+        } catch (Exception e) {
+            logger.error("Error disconnecting", e);
         }
+        // }
+
         connected = false;
         state = LifecycleState.STOPPED;
         logger.info("Digital Twin Agent stopped");

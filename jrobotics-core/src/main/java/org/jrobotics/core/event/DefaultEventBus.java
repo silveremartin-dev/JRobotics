@@ -78,7 +78,6 @@ public class DefaultEventBus implements EventBus {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public <T extends Event> Subscription subscribe(Class<T> eventType, Consumer<T> handler, int priority) {
         Objects.requireNonNull(eventType, "eventType must not be null");
         Objects.requireNonNull(handler, "handler must not be null");

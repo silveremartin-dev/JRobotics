@@ -60,6 +60,7 @@
         <module>jrobotics-robot</module>
         <module>jrobotics-bridge</module>
         <module>jrobotics-benchmark</module>
+        <module>jrobotics-demo</module>
     </modules>
 
     <properties>

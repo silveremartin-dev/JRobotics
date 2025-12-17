@@ -19,16 +19,20 @@ import java.util.Map;
 /**
  * Multi-robot formation controller.
  * 
- * <p>Coordinates multiple robots to maintain geometric formations
- * while following a leader or navigating to goals.</p>
+ * <p>
+ * Coordinates multiple robots to maintain geometric formations
+ * while following a leader or navigating to goals.
+ * </p>
  * 
- * <p><b>Supported formation types:</b></p>
+ * <p>
+ * <b>Supported formation types:</b>
+ * </p>
  * <ul>
- *   <li>Line - robots in a line</li>
- *   <li>Column - robots in a column</li>
- *   <li>V-Formation - wedge pattern</li>
- *   <li>Circle - robots around center</li>
- *   <li>Custom - user-defined offsets</li>
+ * <li>Line - robots in a line</li>
+ * <li>Column - robots in a column</li>
+ * <li>V-Formation - wedge pattern</li>
+ * <li>Circle - robots around center</li>
+ * <li>Custom - user-defined offsets</li>
  * </ul>
  * 
  * @author Silvère Martin-Michiellot
@@ -37,19 +41,21 @@ import java.util.Map;
  * @since 2.0.0
  */
 public class FormationController {
-    
-    public enum FormationType { LINE, COLUMN, V_FORMATION, CIRCLE, CUSTOM }
-    
+
+    public enum FormationType {
+        LINE, COLUMN, V_FORMATION, CIRCLE, CUSTOM
+    }
+
     private final List<String> robotIds;
     private final Map<String, Vector3> formationOffsets;
     private FormationType formationType = FormationType.LINE;
     private double spacing = 1.5; // meters
     private String leaderId;
-    
+
     // Control gains
     private double positionGain = 1.0;
-    private double velocityGain = 0.5;
-    
+    // private double velocityGain = 0.5;
+
     /**
      * Creates a formation controller.
      */
@@ -57,7 +63,7 @@ public class FormationController {
         this.robotIds = new ArrayList<>();
         this.formationOffsets = new HashMap<>();
     }
-    
+
     /**
      * Adds a robot to the formation.
      * 
@@ -72,7 +78,7 @@ public class FormationController {
             updateFormationOffsets();
         }
     }
-    
+
     /**
      * Removes a robot from the formation.
      */
@@ -84,7 +90,7 @@ public class FormationController {
         }
         updateFormationOffsets();
     }
-    
+
     /**
      * Sets the formation type.
      */
@@ -92,7 +98,7 @@ public class FormationController {
         this.formationType = type;
         updateFormationOffsets();
     }
-    
+
     /**
      * Sets robot spacing.
      */
@@ -100,7 +106,7 @@ public class FormationController {
         this.spacing = spacing;
         updateFormationOffsets();
     }
-    
+
     /**
      * Sets the leader robot.
      */
@@ -110,37 +116,37 @@ public class FormationController {
             updateFormationOffsets();
         }
     }
-    
+
     /**
      * Computes velocity command for a follower robot.
      * 
-     * @param robotId robot identifier
-     * @param robotPos current robot position
-     * @param leaderPos leader position
+     * @param robotId       robot identifier
+     * @param robotPos      current robot position
+     * @param leaderPos     leader position
      * @param leaderHeading leader heading in radians
      * @return velocity command [vx, vy]
      */
-    public double[] computeVelocity(String robotId, Vector3 robotPos, 
-                                     Vector3 leaderPos, double leaderHeading) {
+    public double[] computeVelocity(String robotId, Vector3 robotPos,
+            Vector3 leaderPos, double leaderHeading) {
         Vector3 offset = formationOffsets.get(robotId);
         if (offset == null) {
-            return new double[]{0, 0};
+            return new double[] { 0, 0 };
         }
-        
+
         // Rotate offset by leader heading
         double cos = Math.cos(leaderHeading);
         double sin = Math.sin(leaderHeading);
         double targetX = leaderPos.x() + offset.x() * cos - offset.y() * sin;
         double targetY = leaderPos.y() + offset.x() * sin + offset.y() * cos;
-        
+
         // Position error
         double errX = targetX - robotPos.x();
         double errY = targetY - robotPos.y();
-        
+
         // Velocity command
         double vx = positionGain * errX;
         double vy = positionGain * errY;
-        
+
         // Limit velocity
         double maxV = 2.0;
         double v = Math.sqrt(vx * vx + vy * vy);
@@ -148,10 +154,10 @@ public class FormationController {
             vx = vx / v * maxV;
             vy = vy / v * maxV;
         }
-        
-        return new double[]{vx, vy};
+
+        return new double[] { vx, vy };
     }
-    
+
     /**
      * Gets desired position for a robot in formation.
      */
@@ -160,24 +166,23 @@ public class FormationController {
         if (offset == null) {
             return leaderPos;
         }
-        
+
         double cos = Math.cos(leaderHeading);
         double sin = Math.sin(leaderHeading);
         return new Vector3(
-            leaderPos.x() + offset.x() * cos - offset.y() * sin,
-            leaderPos.y() + offset.x() * sin + offset.y() * cos,
-            0
-        );
+                leaderPos.x() + offset.x() * cos - offset.y() * sin,
+                leaderPos.y() + offset.x() * sin + offset.y() * cos,
+                0);
     }
-    
+
     private void updateFormationOffsets() {
         formationOffsets.clear();
         int n = robotIds.size();
-        
+
         for (int i = 0; i < n; i++) {
             String robotId = robotIds.get(i);
             Vector3 offset;
-            
+
             if (robotId.equals(leaderId)) {
                 offset = Vector3.ZERO;
             } else {
@@ -187,11 +192,11 @@ public class FormationController {
                 }
                 offset = computeOffset(followerIndex, n - 1);
             }
-            
+
             formationOffsets.put(robotId, offset);
         }
     }
-    
+
     private Vector3 computeOffset(int index, int totalFollowers) {
         return switch (formationType) {
             case LINE -> new Vector3(0, -(index + 1) * spacing, 0);
@@ -204,32 +209,30 @@ public class FormationController {
             case CIRCLE -> {
                 double angle = 2 * Math.PI * index / totalFollowers;
                 yield new Vector3(
-                    -Math.cos(angle) * spacing,
-                    Math.sin(angle) * spacing,
-                    0
-                );
+                        -Math.cos(angle) * spacing,
+                        Math.sin(angle) * spacing,
+                        0);
             }
             case CUSTOM -> formationOffsets.getOrDefault(
-                robotIds.get(index + 1), 
-                new Vector3(-spacing, 0, 0)
-            );
+                    robotIds.get(index + 1),
+                    new Vector3(-spacing, 0, 0));
         };
     }
-    
+
     /**
      * Sets custom offset for a robot.
      */
     public void setCustomOffset(String robotId, double x, double y) {
         formationOffsets.put(robotId, new Vector3(x, y, 0));
     }
-    
+
     /**
      * Gets number of robots.
      */
     public int getRobotCount() {
         return robotIds.size();
     }
-    
+
     /**
      * Gets leader ID.
      */

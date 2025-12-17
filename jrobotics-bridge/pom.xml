@@ -46,5 +46,12 @@
             <artifactId>aws-iot-device-sdk-java</artifactId>
             <version>1.3.11</version>
         </dependency>
+
+        <!-- ROS2 Client -->
+        <dependency>
+            <groupId>io.github.lambdaprime</groupId>
+            <artifactId>jros2client</artifactId>
+            <version>12.0</version>
+        </dependency>
     </dependencies>
 </project>

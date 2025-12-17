@@ -10,7 +10,7 @@
 package org.jrobotics.sensor.vision;
 
 import org.bytedeco.javacv.Frame;
-import org.bytedeco.javacv.FrameGrabber;
+
 import org.bytedeco.javacv.OpenCVFrameConverter;
 import org.bytedeco.javacv.OpenCVFrameGrabber;
 import org.bytedeco.opencv.opencv_core.Mat;

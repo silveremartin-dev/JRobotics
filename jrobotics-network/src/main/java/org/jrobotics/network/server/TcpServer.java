@@ -22,7 +22,9 @@ import java.util.concurrent.*;
 /**
  * TCP server for centralized robot communication.
  * 
- * <p>Provides reliable message delivery for command and control scenarios.</p>
+ * <p>
+ * Provides reliable message delivery for command and control scenarios.
+ * </p>
  * 
  * @author Silvère Martin-Michiellot
  * @author Gemini AI Assistant
@@ -30,20 +32,20 @@ import java.util.concurrent.*;
  * @since 2.0.0
  */
 public class TcpServer extends AbstractNetworkNode {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(TcpServer.class);
-    
+
     private final int port;
     private ServerSocket serverSocket;
     private final Map<String, ClientConnection> clients = new ConcurrentHashMap<>();
     private final ExecutorService acceptExecutor;
     private volatile boolean running = false;
-    
+
     /**
      * Creates a TCP server.
      * 
      * @param nodeId the server node ID
-     * @param port the port to listen on
+     * @param port   the port to listen on
      */
     public TcpServer(String nodeId, int port) {
         super(nodeId);
@@ -54,21 +56,21 @@ public class TcpServer extends AbstractNetworkNode {
             return t;
         });
     }
-    
+
     @Override
     protected void doStart() throws LifecycleException {
         try {
             serverSocket = new ServerSocket(port);
             running = true;
-            
+
             acceptExecutor.submit(this::acceptLoop);
-            
+
             logger.info("[{}] TCP server started on port {}", System.currentTimeMillis(), port);
         } catch (IOException e) {
             throw new LifecycleException("Failed to start TCP server", e);
         }
     }
-    
+
     /**
      * Accept loop for incoming connections.
      */
@@ -84,7 +86,7 @@ public class TcpServer extends AbstractNetworkNode {
             }
         }
     }
-    
+
     /**
      * Handles a client connection.
      */
@@ -92,32 +94,33 @@ public class TcpServer extends AbstractNetworkNode {
         try {
             ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
             ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-            
+
             // Wait for connect message
             Message connectMsg = readMessage(in);
             if (connectMsg == null || connectMsg.getType() != MessageType.CONNECT) {
                 socket.close();
                 return;
             }
-            
+
             String clientId = connectMsg.getSourceId();
             ClientConnection conn = new ClientConnection(clientId, socket, in, out);
             clients.put(clientId, conn);
             addPeer(clientId);
-            
+
             // Send ack
             NetworkMessage ack = NetworkMessage.create(MessageType.CONNECT_ACK, getNodeId(), clientId);
             writeMessage(out, ack);
-            
+
             logger.info("[{}] Client connected: {}", System.currentTimeMillis(), clientId);
-            
+
             // Read loop
             while (running && socket.isConnected()) {
                 Message msg = readMessage(in);
-                if (msg == null) break;
-                
+                if (msg == null)
+                    break;
+
                 dispatchMessage(msg);
-                
+
                 // Forward to target if specified
                 if (!msg.isBroadcast() && !getNodeId().equals(msg.getTargetId())) {
                     ClientConnection target = clients.get(msg.getTargetId());
@@ -139,7 +142,7 @@ public class TcpServer extends AbstractNetworkNode {
             });
         }
     }
-    
+
     @Override
     public boolean send(Message message) {
         ClientConnection conn = clients.get(message.getTargetId());
@@ -153,63 +156,65 @@ public class TcpServer extends AbstractNetworkNode {
         }
         return false;
     }
-    
+
     @Override
     public void broadcast(Message message) {
         for (ClientConnection conn : clients.values()) {
             try {
                 writeMessage(conn.out, message);
             } catch (IOException e) {
-                logger.error("[{}] Broadcast failed to {}: {}", 
+                logger.error("[{}] Broadcast failed to {}: {}",
                         System.currentTimeMillis(), conn.clientId, e.getMessage());
             }
         }
     }
-    
+
     @Override
     public boolean connectTo(String address) {
         return false; // Server doesn't connect to others
     }
-    
+
     @Override
     public boolean isConnected() {
         return running && serverSocket != null && !serverSocket.isClosed();
     }
-    
+
     @Override
     public void disconnect() {
         running = false;
-        
+
         for (ClientConnection conn : clients.values()) {
             try {
                 conn.socket.close();
-            } catch (IOException ignored) {}
+            } catch (IOException ignored) {
+            }
         }
         clients.clear();
-        
+
         if (serverSocket != null && !serverSocket.isClosed()) {
             try {
                 serverSocket.close();
-            } catch (IOException ignored) {}
+            } catch (IOException ignored) {
+            }
         }
-        
+
         acceptExecutor.shutdownNow();
     }
-    
+
     /**
      * Gets the port.
      */
     public int getPort() {
         return port;
     }
-    
+
     /**
      * Gets the number of connected clients.
      */
     public int getClientCount() {
         return clients.size();
     }
-    
+
     private Message readMessage(ObjectInputStream in) throws IOException, ClassNotFoundException {
         try {
             return (Message) in.readObject();
@@ -217,14 +222,14 @@ public class TcpServer extends AbstractNetworkNode {
             return null;
         }
     }
-    
+
     private void writeMessage(ObjectOutputStream out, Message msg) throws IOException {
         synchronized (out) {
             out.writeObject(msg);
             out.flush();
         }
     }
-    
+
     /**
      * Client connection holder.
      */
@@ -233,7 +238,7 @@ public class TcpServer extends AbstractNetworkNode {
         final Socket socket;
         final ObjectInputStream in;
         final ObjectOutputStream out;
-        
+
         ClientConnection(String clientId, Socket socket, ObjectInputStream in, ObjectOutputStream out) {
             this.clientId = clientId;
             this.socket = socket;

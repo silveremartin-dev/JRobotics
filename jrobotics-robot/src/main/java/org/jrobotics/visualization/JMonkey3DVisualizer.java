@@ -10,16 +10,13 @@
 package org.jrobotics.visualization;
 
 import com.jme3.app.SimpleApplication;
-import com.jme3.light.AmbientLight;
-import com.jme3.light.DirectionalLight;
-import com.jme3.material.Material;
-import com.jme3.math.ColorRGBA;
+
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Sphere;
-import com.jme3.system.AppSettings;
+
 import org.jrobotics.simulation.PhysicsBody;
 import org.jrobotics.simulation.PhysicsWorld;
 import org.jrobotics.simulation.Vector3;

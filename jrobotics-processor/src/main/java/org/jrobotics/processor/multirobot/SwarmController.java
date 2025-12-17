@@ -10,7 +10,7 @@
 package org.jrobotics.processor.multirobot;
 
 import org.jrobotics.processor.AbstractProcessor;
-import org.jrobotics.processor.ProcessorException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,14 +30,15 @@ import java.util.List;
  */
 public class SwarmController extends AbstractProcessor<List<SwarmController.Neighbor>, double[]> {
 
-    private static final Logger logger = LoggerFactory.getLogger(SwarmController.class);
+    // private static final Logger logger =
+    // LoggerFactory.getLogger(SwarmController.class);
 
     // Weights
     private double separationWeight = 1.5;
     private double alignmentWeight = 1.0;
     private double cohesionWeight = 1.0;
-    private double maxSpeed = 1.0;
-    private double maxForce = 0.1;
+    // private double maxSpeed = 1.0;
+    // private double maxForce = 0.1;
     private double perceptionRadius = 2.0;
     private double separationRadius = 1.0;
 

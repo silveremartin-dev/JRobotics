@@ -34,7 +34,8 @@ import java.util.Random;
  */
 public class FastSLAMProcessor extends AbstractProcessor<LidarScan, double[]> {
 
-    private static final Logger logger = LoggerFactory.getLogger(FastSLAMProcessor.class);
+    // private static final Logger logger =
+    // LoggerFactory.getLogger(FastSLAMProcessor.class);
 
     private final int numParticles;
     private final List<Particle> particles;
@@ -43,7 +44,7 @@ public class FastSLAMProcessor extends AbstractProcessor<LidarScan, double[]> {
     // Simple grid map representation
     private final int width = 100;
     private final int height = 100;
-    private final double resolution = 0.1; // meters per cell
+    // private final double resolution = 0.1; // meters per cell
 
     public FastSLAMProcessor(String id) {
         super(id, "FastSLAM-" + id);
@@ -103,7 +104,7 @@ public class FastSLAMProcessor extends AbstractProcessor<LidarScan, double[]> {
         // In real FastSLAM, we'd check against each particle's map
         for (Particle p : particles) {
             double score = 0;
-            for (LidarPoint point : scan.getPoints()) {
+            for (LidarPoint ignored : scan.getPoints()) {
                 // Check if endpoint hits expected obstacle in map?
                 // Stub: random weight for demo + bias towards current estimate
                 score += 1.0;

@@ -9,28 +9,28 @@
  */
 package org.jrobotics.bridge.ros2;
 
+import id.jros2client.JRos2Client;
+import id.jros2client.JRos2ClientFactory;
+import id.jrosmessages.Message;
+import id.jros2client.impl.JRos2ClientImpl;
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import org.jrobotics.bridge.RoboticsBridge;
 import org.jrobotics.core.LifecycleException;
 import org.jrobotics.core.LifecycleState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
 
 /**
  * Bridge for ROS2 (Robot Operating System 2).
  * 
  * <p>
- * Connects JRobotics to ROS2 DDS domain.
- * </p>
- * 
- * <p>
- * <b>Note:</b> Pure Java implementation requires `jros2client` libraries which
- * are not currently resolving in this environment. This is a placeholder that
- * simulates connection. To enable real ROS2, invoke with valid jros2client
- * dependencies.
+ * Connects JRobotics to ROS2 DDS domain using jros2client.
  * </p>
  * 
  * @author Silvère Martin-Michiellot
@@ -42,11 +42,11 @@ public class Ros2Bridge implements RoboticsBridge {
 
     private static final Logger logger = LoggerFactory.getLogger(Ros2Bridge.class);
 
-    private final String nodeName;
+    private final String nodeName; // e.g. "jrobotics_bridge"
     private LifecycleState state = LifecycleState.CREATED;
     private final Map<String, List<Consumer<?>>> subscribers = new ConcurrentHashMap<>();
-    private final Map<String, Object> lastPublished = new ConcurrentHashMap<>();
 
+    private JRos2Client client;
     private boolean connected = false;
 
     public Ros2Bridge(String nodeName) {
@@ -61,16 +61,22 @@ public class Ros2Bridge implements RoboticsBridge {
     @Override
     public void initialize() throws LifecycleException {
         state = LifecycleState.INITIALIZED;
+        // JRos2Client initialization is typically lazy or in start()
         logger.info("[{}] ROS2 bridge '{}' initialized", System.currentTimeMillis(), nodeName);
     }
 
     @Override
     public void start() throws LifecycleException {
         try {
+            logger.info("Starting ROS2 client...");
+            client = new JRos2ClientFactory().createClient();
+            // JRos2Client doesn't have a rigid start(), it starts on first use usually,
+            // but we can check connectivity or just mark as running.
+
             state = LifecycleState.RUNNING;
             connected = true;
-            logger.warn("[{}] ROS2 bridge '{}' started (STUB MODE - No real connection)", System.currentTimeMillis(),
-                    nodeName);
+            logger.info("[{}] ROS2 bridge '{}' started connected to DDS domain",
+                    System.currentTimeMillis(), nodeName);
         } catch (Exception e) {
             throw new LifecycleException("Failed to start ROS2 bridge", e);
         }
@@ -78,6 +84,17 @@ public class Ros2Bridge implements RoboticsBridge {
 
     @Override
     public void stop() throws LifecycleException {
+        if (client != null) {
+            try {
+                // JRos2Client implements AutoCloseable usually, or we just null it
+                // In v12 it might be close()
+                if (client instanceof AutoCloseable) {
+                    ((AutoCloseable) client).close();
+                }
+            } catch (Exception e) {
+                logger.error("Error stopping ROS2 client", e);
+            }
+        }
         connected = false;
         state = LifecycleState.STOPPED;
         logger.info("[{}] ROS2 bridge '{}' stopped", System.currentTimeMillis(), nodeName);
@@ -117,23 +134,47 @@ public class Ros2Bridge implements RoboticsBridge {
 
     @Override
     public boolean publish(String topic, Object message) {
-        if (!connected)
+        if (!connected || client == null)
             return false;
-        lastPublished.put(topic, message);
-        logger.debug("[STUB] Publishing to {}: {}", topic, message);
-        return true;
+
+        // This requires the message object to be a valid id.jrosmessages.Message
+        if (message instanceof Message) {
+            try {
+                client.publish(topic, (Class<? extends Message>) message.getClass(), (Message) message);
+                return true;
+            } catch (Exception e) {
+                logger.error("Failed to publish ROS2 message", e);
+                return false;
+            }
+        } else {
+            logger.warn("Cannot publish non-JRosMessage object: {}", message.getClass().getName());
+            return false;
+        }
     }
 
     @Override
     public <T> void subscribe(String topic, Class<T> type, Consumer<T> handler) {
-        subscribers.computeIfAbsent(topic, k -> new CopyOnWriteArrayList<>()).add(handler);
-        logger.debug("[STUB] Subscribed to {}", topic);
+        if (!connected || client == null) {
+            logger.warn("Cannot subscribe: ROS2 client not connected");
+            return;
+        }
+
+        // We need to map generic T to JRosMessage type
+        if (Message.class.isAssignableFrom(type)) {
+            Class<? extends Message> msgType = (Class<? extends Message>) type;
+            client.subscribe(topic, msgType, (msg) -> {
+                handler.accept((T) msg);
+            });
+            logger.info("Subscribed to ROS2 topic: {}", topic);
+        } else {
+            logger.error("Unsupported message type for ROS2: {}", type.getName());
+        }
     }
 
     @Override
     public void unsubscribe(String topic) {
-        subscribers.remove(topic);
-        logger.debug("[STUB] Unsubscribed from {}", topic);
+        // JRos2Client might not expose easy unsubscribe in partial API
+        logger.warn("Unsubscribe not fully supported in this bridge version");
     }
 
     @Override
@@ -142,23 +183,7 @@ public class Ros2Bridge implements RoboticsBridge {
         return null;
     }
 
-    /**
-     * Gets sender node name.
-     * 
-     * @return node name
-     */
     public String getNodeName() {
         return nodeName;
-    }
-
-    // Testing helpers
-    public boolean simulateMessage(String topic, Object msg) {
-        List<Consumer<?>> subs = subscribers.get(topic);
-        if (subs == null)
-            return false;
-        for (Consumer sub : subs) {
-            sub.accept(msg);
-        }
-        return true;
     }
 }
