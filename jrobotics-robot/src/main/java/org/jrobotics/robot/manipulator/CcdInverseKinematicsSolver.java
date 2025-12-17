@@ -10,8 +10,6 @@
 package org.jrobotics.robot.manipulator;
 
 import org.jrobotics.core.math.Vector3;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +30,8 @@ import java.util.List;
  */
 public class CcdInverseKinematicsSolver implements InverseKinematicsSolver {
 
-    private static final Logger logger = LoggerFactory.getLogger(CcdInverseKinematicsSolver.class);
+    // private static final Logger logger =
+    // LoggerFactory.getLogger(CcdInverseKinematicsSolver.class);
 
     private final List<Double> linkLengths;
     private final int maxIterations;

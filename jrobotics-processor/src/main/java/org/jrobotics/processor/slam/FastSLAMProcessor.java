@@ -12,7 +12,6 @@ package org.jrobotics.processor.slam;
 import org.jrobotics.processor.AbstractProcessor;
 import org.jrobotics.processor.ProcessorException;
 import org.jrobotics.sensor.range.LidarScan;
-import org.jrobotics.sensor.range.LidarPoint;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -105,11 +104,9 @@ public class FastSLAMProcessor extends AbstractProcessor<LidarScan, double[]> {
         // In real FastSLAM, we'd check against each particle's map
         for (Particle p : particles) {
             double score = 0;
-            for (LidarPoint ignored : scan.getPoints()) {
-                // Simplified scan-matching score: count matching points
-                // In production, compare against particle's occupancy grid
-                score += 1.0;
-            }
+            // Simplified scan-matching score: count matching points
+            // In production, compare against particle's occupancy grid
+            score += scan.getPoints().size();
             p.weight = Math.max(score, 0.001); // Prevent zero weights
         }
 

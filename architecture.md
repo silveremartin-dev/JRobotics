@@ -27,6 +27,9 @@ This document describes the overall architecture of the JRobotics v2 robotics fr
 │                      jrobotics-simulation                        │
 │                    (Physics, environment)                        │
 ├──────────────────────────────────────────────────────────────────┤
+│    jrobotics-cli    │   jrobotics-editor  │  jrobotics-bench     │
+│       (Tools)       │     (Visualizer)    │    (Performance)     │
+├──────────────────────────────────────────────────────────────────┤
 │                         jrobotics-hal                            │
 │                 (Hardware Abstraction Layer)                     │
 ├──────────────────────────────────────────────────────────────────┤
@@ -91,8 +94,8 @@ Hardware Abstraction Layer for platform-independent hardware access:
 Sensor implementations and fusion:
 
 - `Sensor<T>` - Generic sensor interface
-- Camera, LIDAR, IMU, ultrasonic, etc.
-- `SensorFusion` - Kalman filter, complementary filter
+- Camera (RGB, Depth), LIDAR, IMU, ultrasonic, etc.
+- `SensorFusion` - Kalman filter (1D, EKF), complementary filter
 
 ### jrobotics-actuator
 
@@ -102,15 +105,19 @@ Actuator implementations:
 - Motors (DC, stepper, brushless)
 - Servos (position, continuous)
 - PID controllers
+- Motion profiles
 
 ### jrobotics-processor
 
 AI and reasoning components:
 
 - `Processor` - Processing pipeline interface
-- Path planners (A*, RRT, Dijkstra)
-- Behavior trees, FSM
-- SLAM interfaces
+- **Path Planning** - A*, RRT, Dijkstra
+- **Behavior Trees** - Nodes, Composites, Decorators
+- **SLAM** - FastSLAM 2.0, Occupancy Grid
+- **Deep Learning** - DJL integration for inference
+- **Reinforcement Learning** - DQN, PPO agents
+- **Swarm Intelligence** - Distributed logic (Boids)
 
 ### jrobotics-simulation
 
@@ -119,14 +126,17 @@ Physics simulation environment:
 - `Environment` - Virtual world
 - `PhysicsEngine` - Rigid body physics
 - Entity management
-- Hybrid mode support
+- Hybrid mode support (Simulated + Real)
 
 ### jrobotics-network
 
 Networking and communication:
 
-- P2P protocols
-- Server-mediated communication
+- P2P protocols (UDP)
+- Server-mediated communication (TCP)
+- **Swarm** - Distributed Shared Memory (DSM), Federated Learning
+- **Security** - TLS/SSL, RBAC Manager
+- **OTA** - Firmware update manager
 - Remote control interfaces
 - Message serialization
 
@@ -134,7 +144,7 @@ Networking and communication:
 
 Complete robot implementations:
 
-- `WheeledRobot`
+- `WheeledRobot` - Differential drive, etc.
 - `LeggedRobot`
 - `RoboticArm`
 - `Drone`
@@ -143,9 +153,26 @@ Complete robot implementations:
 
 Integration with external frameworks:
 
-- ROS2 bridge
+- ROS2 bridge (using jros2client)
+- Cloud bridge (AWS/Azure IoT adapters)
 - MQTT bridge
 - Extensible protocol framework
+
+### jrobotics-cli
+
+Command-line tooling:
+
+- Robot management (list, connect, status)
+- Configuration
+- Firmware updates
+
+### jrobotics-editor
+
+Visual IDE:
+
+- Behavior Tree editor
+- Robot configuration visualizer
+- Real-time telemetry dashboard (JavaFX)
 
 ## Threading Model
 

@@ -33,6 +33,7 @@ public abstract class AbstractServoBank extends AbstractComponent implements Ser
     private final int channelCount;
     private final Map<Integer, Servo> servos = new ConcurrentHashMap<>();
 
+    @SuppressWarnings("this-escape")
     protected AbstractServoBank(String id, String name, int channelCount) {
         super(id, name, ComponentType.ACTUATOR);
         this.channelCount = channelCount;

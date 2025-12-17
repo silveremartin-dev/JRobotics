@@ -142,11 +142,6 @@ public class Pi4JProvider implements HalProvider {
             return currentMode;
         }
 
-        // Legacy boolean write
-        public void write(boolean high) {
-            write(high ? State.HIGH : State.LOW);
-        }
-
         @Override
         public void write(State state) {
             if (output != null) {

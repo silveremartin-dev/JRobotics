@@ -89,7 +89,7 @@
         <maven-surefire-plugin.version>3.2.3</maven-surefire-plugin.version>
         <maven-javadoc-plugin.version>3.6.3</maven-javadoc-plugin.version>
         <maven-source-plugin.version>3.3.0</maven-source-plugin.version>
-        <jacoco-plugin.version>0.8.11</jacoco-plugin.version>
+        <jacoco-plugin.version>0.8.12</jacoco-plugin.version>
     </properties>
 
     <dependencyManagement>
@@ -275,6 +275,12 @@
             <artifactId>mockito-core</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.awaitility</groupId>
+            <artifactId>awaitility</artifactId>
+            <version>4.2.0</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -285,8 +291,7 @@
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>${maven-compiler-plugin.version}</version>
                     <configuration>
-                        <source>${java.version}</source>
-                        <target>${java.version}</target>
+                        <release>21</release>
                         <encoding>${project.build.sourceEncoding}</encoding>
                         <compilerArgs>
                             <arg>-Xlint:all</arg>
@@ -306,6 +311,13 @@
                         <doclint>none</doclint>
                         <encoding>${project.build.sourceEncoding}</encoding>
                         <docencoding>${project.reporting.outputEncoding}</docencoding>
+                        <windowtitle>JRobotics v2 API</windowtitle>
+                        <doctitle>JRobotics v2 API</doctitle>
+                        <bottom>Copyright &#169; {currentYear} Silvère Martin-Michiellot. All rights reserved.</bottom>
+                        <splitindex>true</splitindex>
+                        <use>true</use>
+                        <source>21</source>
+                        <additionalJOption>-Xdoclint:none</additionalJOption>
                     </configuration>
                 </plugin>
                 <plugin>

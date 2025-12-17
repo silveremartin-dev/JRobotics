@@ -67,6 +67,24 @@ public class DeepLearningProcessor extends AbstractProcessor<Image, Classificati
     private int inputHeight = 224;
 
     /**
+     * Gets the model path.
+     * 
+     * @return the model path
+     */
+    public String getModelPath() {
+        return modelPath;
+    }
+
+    /**
+     * Gets the model name.
+     * 
+     * @return the model name
+     */
+    public String getModelName() {
+        return modelName;
+    }
+
+    /**
      * Creates a new DeepLearningProcessor.
      *
      * @param id unique identifier

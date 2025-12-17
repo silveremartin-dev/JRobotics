@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
-import java.util.function.Consumer;
 
 /**
  * Bridge for ROS2 (Robot Operating System 2).

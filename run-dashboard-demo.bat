@@ -1,18 +1,29 @@
 @echo off
-REM JRobotics Dashboard Demo Launcher
-REM Runs the simulated robot dashboard
+REM JRobotics v2 - Dashboard Demo Launcher (Windows)
+REM 
+REM Copyright (c) 2025 Silvere Martin-Michiellot
+REM Licensed under the MIT License.
+
+echo ====================================
+echo JRobotics Dashboard Demo
+echo ====================================
+echo.
 
 cd /d "%~dp0"
 
-echo Building JRobotics...
-call mvn clean install -DskipTests -q
-if %ERRORLEVEL% NEQ 0 (
-    echo Build failed!
+REM Check if Maven is installed
+where mvn >nul 2>nul
+if %ERRORLEVEL% neq 0 (
+    echo ERROR: Maven is not installed or not in PATH.
+    echo Please install Maven from https://maven.apache.org
     pause
-    exit /b %ERRORLEVEL%
+    exit /b 1
 )
 
-echo Starting Dashboard Demo...
-java -cp jrobotics-demo/target/jrobotics-demo-2.0.0-SNAPSHOT.jar;jrobotics-demo/target/dependency/*;jrobotics-core/target/classes;jrobotics-sensor/target/classes;jrobotics-actuator/target/classes;jrobotics-network/target/classes;jrobotics-robot/target/classes org.jrobotics.demo.DashboardDemo
+echo Starting Dashboard Server...
+echo Access the dashboard at http://localhost:8080
+echo.
+
+call mvn exec:java -pl jrobotics-demo -Dexec.mainClass="org.jrobotics.demo.DashboardDemo" -q
 
 pause

@@ -43,31 +43,25 @@ public class DistributedSharedMemory implements Lifecycle {
     private static final Logger logger = LoggerFactory.getLogger(DistributedSharedMemory.class);
     private static final int DEFAULT_PORT = 9999;
     private static final String DEFAULT_GROUP = "230.0.0.1";
-    private static final int PACKET_SIZE = 4096;
 
     private final String nodeId;
-    private final int port;
-    private final String multicastGroup;
+    private final Transport transport;
     private final ObjectMapper mapper = new ObjectMapper();
 
     // In-memory storage: Key -> DistributedEntry
     private final Map<String, DistributedEntry> storage = new ConcurrentHashMap<>();
 
-    private MulticastSocket socket;
-    private InetAddress validGroup;
     private volatile LifecycleState state = LifecycleState.CREATED;
-    private Thread listenerThread;
     private ScheduledExecutorService broadcaster;
-
     private volatile boolean running = false;
 
     /**
-     * Creates a DSM node.
+     * Creates a DSM node using default UDP Multicast transport.
      * 
      * @param nodeId unique ID of this node
      */
     public DistributedSharedMemory(String nodeId) {
-        this(nodeId, DEFAULT_PORT, DEFAULT_GROUP);
+        this(nodeId, new UdpMulticastTransport(DEFAULT_PORT, DEFAULT_GROUP));
     }
 
     /**
@@ -78,32 +72,25 @@ public class DistributedSharedMemory implements Lifecycle {
      * @param multicastGroup multicast group address
      */
     public DistributedSharedMemory(String nodeId, int port, String multicastGroup) {
+        this(nodeId, new UdpMulticastTransport(port, multicastGroup));
+    }
+
+    /**
+     * Creates a DSM node with a specific transport (useful for testing).
+     * 
+     * @param nodeId    unique ID of this node
+     * @param transport the transport implementation
+     */
+    public DistributedSharedMemory(String nodeId, Transport transport) {
         this.nodeId = nodeId;
-        this.port = port;
-        this.multicastGroup = multicastGroup;
+        this.transport = transport;
     }
 
     @Override
     public void initialize() throws LifecycleException {
-        try {
-            validGroup = InetAddress.getByName(multicastGroup);
-            socket = new MulticastSocket(port);
-            // In a real network, you'd join the group on a specific interface
-            // socket.joinGroup(validGroup);
-            // For simplicity/compatibility in tests or specific network setups:
-            socket.setTimeToLive(1); // Local network only
-
-            // Note: joinGroup is deprecated in newer Java versions but standard in 8.
-            // In 17+, use joinGroup(SocketAddress, NetworkInterface).
-            // We'll stick to simple implementation or assume broadcast for now if multicast
-            // fails.
-
-            state = LifecycleState.INITIALIZED;
-            logger.info("DSM initialized on {}:{}", multicastGroup, port);
-        } catch (IOException e) {
-            state = LifecycleState.ERROR;
-            throw new LifecycleException("Failed to initialize DSM socket", e);
-        }
+        transport.initialize(this::processIncomingUpdate);
+        state = LifecycleState.INITIALIZED;
+        logger.info("DSM initialized for node {}", nodeId);
     }
 
     @Override
@@ -113,11 +100,7 @@ public class DistributedSharedMemory implements Lifecycle {
         }
 
         running = true;
-
-        // Start listener
-        listenerThread = new Thread(this::listenLoop, "DSM-Listener-" + nodeId);
-        listenerThread.setDaemon(true);
-        listenerThread.start();
+        transport.start();
 
         // Start periodic broadcaster for owned keys (heartbeat/sync)
         broadcaster = Executors.newSingleThreadScheduledExecutor();
@@ -133,9 +116,7 @@ public class DistributedSharedMemory implements Lifecycle {
         if (broadcaster != null) {
             broadcaster.shutdownNow();
         }
-        if (socket != null && !socket.isClosed()) {
-            socket.close();
-        }
+        transport.stop();
         state = LifecycleState.STOPPED;
         logger.info("DSM stopped");
     }
@@ -149,9 +130,8 @@ public class DistributedSharedMemory implements Lifecycle {
 
     @Override
     public void pause() {
-        // No-op for now, or stop broadcaster
         if (state == LifecycleState.RUNNING) {
-            state = LifecycleState.STOPPED; // Reusing stopped for pause as simplified state map
+            state = LifecycleState.STOPPED;
         }
     }
 
@@ -218,64 +198,44 @@ public class DistributedSharedMemory implements Lifecycle {
     }
 
     private void broadcastEntry(DistributedEntry entry) {
-        if (!running || socket == null)
+        if (!running)
             return;
-
         try {
-            byte[] data = mapper.writeValueAsBytes(entry);
-            DatagramPacket packet = new DatagramPacket(data, data.length, validGroup, port);
-            socket.send(packet);
-        } catch (IOException e) {
+            String json = mapper.writeValueAsString(entry);
+            transport.send(json);
+        } catch (Exception e) {
             logger.error("Failed to broadcast entry: {}", entry.key, e);
         }
     }
 
     private void broadcastOwnedKeys() {
-        // Periodically re-broadcast keys owned by this node to ensure eventual
-        // consistency
-        // and handle new nodes joining
         storage.values().stream()
                 .filter(e -> nodeId.equals(e.owner))
                 .forEach(this::broadcastEntry);
     }
 
-    private void listenLoop() {
-        byte[] buffer = new byte[PACKET_SIZE];
-        while (running && !socket.isClosed()) {
-            try {
-                DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-                socket.receive(packet);
+    // Callback from Transport
+    private void processIncomingUpdate(String json) {
+        try {
+            DistributedEntry newEntry = mapper.readValue(json, DistributedEntry.class);
 
-                // Ignore own packets if loopback is enabled (simplification)
-                // In production, we'd check the content first.
+            // Ignore if we own it (loopback)
+            if (newEntry.owner.equals(nodeId))
+                return;
 
-                DistributedEntry entry = mapper.readValue(
-                        new String(packet.getData(), 0, packet.getLength()),
-                        DistributedEntry.class);
-
-                if (!entry.owner.equals(nodeId)) {
-                    processIncomingUpdate(entry);
+            storage.compute(newEntry.key, (k, existing) -> {
+                if (existing == null) {
+                    return newEntry;
                 }
-
-            } catch (IOException e) {
-                if (running) {
-                    logger.warn("Error receiving DSM packet", e);
+                // Last Write Wins (LWW) resolution based on timestamp
+                if (newEntry.timestamp > existing.timestamp) {
+                    return newEntry;
                 }
-            }
+                return existing;
+            });
+        } catch (Exception e) {
+            logger.warn("Failed to process incoming DSM update", e);
         }
-    }
-
-    private void processIncomingUpdate(DistributedEntry newEntry) {
-        storage.compute(newEntry.key, (k, existing) -> {
-            if (existing == null) {
-                return newEntry;
-            }
-            // Last Write Wins (LWW) resolution based on timestamp
-            if (newEntry.timestamp > existing.timestamp) {
-                return newEntry;
-            }
-            return existing;
-        });
     }
 
     /**
@@ -288,13 +248,96 @@ public class DistributedSharedMemory implements Lifecycle {
         public long timestamp;
 
         public DistributedEntry() {
-        } // For Jackson
+        }
 
         public DistributedEntry(String key, Object value, String owner, long timestamp) {
             this.key = key;
             this.value = value;
             this.owner = owner;
             this.timestamp = timestamp;
+        }
+    }
+
+    /**
+     * Transport abstraction for DSM.
+     */
+    public interface Transport {
+        void initialize(java.util.function.Consumer<String> messageHandler) throws LifecycleException;
+
+        void start() throws LifecycleException;
+
+        void stop() throws LifecycleException;
+
+        void send(String message) throws Exception;
+    }
+
+    /**
+     * Default UDP Multicast implementation.
+     */
+    public static class UdpMulticastTransport implements Transport {
+        private final int port;
+        private final String groupAddress;
+        private MulticastSocket socket;
+        private InetAddress group;
+        private Thread listenerThread;
+        private volatile boolean active = false;
+        private java.util.function.Consumer<String> handler;
+
+        public UdpMulticastTransport(int port, String groupAddress) {
+            this.port = port;
+            this.groupAddress = groupAddress;
+        }
+
+        @Override
+        public void initialize(java.util.function.Consumer<String> messageHandler) throws LifecycleException {
+            this.handler = messageHandler;
+            try {
+                group = InetAddress.getByName(groupAddress);
+                socket = new MulticastSocket(port);
+                socket.setTimeToLive(1);
+            } catch (IOException e) {
+                throw new LifecycleException("Failed to init UDP transport", e);
+            }
+        }
+
+        @Override
+        public void start() {
+            active = true;
+            listenerThread = new Thread(this::listenLoop, "DSM-UDP-Listener");
+            listenerThread.setDaemon(true);
+            listenerThread.start();
+        }
+
+        @Override
+        public void stop() {
+            active = false;
+            if (socket != null && !socket.isClosed()) {
+                socket.close();
+            }
+        }
+
+        @Override
+        public void send(String message) throws Exception {
+            byte[] data = message.getBytes();
+            DatagramPacket packet = new DatagramPacket(data, data.length, group, port);
+            socket.send(packet);
+        }
+
+        private void listenLoop() {
+            byte[] buffer = new byte[4096];
+            while (active && !socket.isClosed()) {
+                try {
+                    DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+                    socket.receive(packet);
+                    String msg = new String(packet.getData(), 0, packet.getLength());
+                    if (handler != null) {
+                        handler.accept(msg);
+                    }
+                } catch (IOException e) {
+                    if (active)
+                        logger.warn("UDP receive error", e);
+                }
+            }
         }
     }
 }

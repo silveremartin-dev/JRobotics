@@ -12,17 +12,16 @@ package org.jrobotics.processor.navigation;
 /**
  * Represents a velocity command for robot motion.
  * 
+ * @param linear  Linear velocity in m/s
+ * @param angular Angular velocity in rad/s
  * @author Silvère Martin-Michiellot
  * @author Gemini AI Assistant
  * @version 2.0.0
  * @since 2.0.0
  */
 public record VelocityCommand(
-    /** Linear velocity in m/s */
-    double linear,
-    /** Angular velocity in rad/s */
-    double angular
-) {
+        double linear,
+        double angular) {
     /**
      * Creates a stop command.
      * 
@@ -31,7 +30,7 @@ public record VelocityCommand(
     public static VelocityCommand stop() {
         return new VelocityCommand(0, 0);
     }
-    
+
     /**
      * Creates a forward motion command.
      * 
@@ -41,7 +40,7 @@ public record VelocityCommand(
     public static VelocityCommand forward(double speed) {
         return new VelocityCommand(speed, 0);
     }
-    
+
     /**
      * Creates a rotation command.
      * 
@@ -51,7 +50,7 @@ public record VelocityCommand(
     public static VelocityCommand rotate(double angularSpeed) {
         return new VelocityCommand(0, angularSpeed);
     }
-    
+
     /**
      * Checks if this is a stop command.
      * 

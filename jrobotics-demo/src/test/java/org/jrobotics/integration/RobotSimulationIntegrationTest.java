@@ -34,7 +34,7 @@ class RobotSimulationIntegrationTest {
                 .build();
 
         assertNotNull(world);
-        assertEquals(5, world.getBodies().size(), "4 walls + 2 obstacles + 1 robot - actually 5");
+        assertEquals(7, world.getBodies().size(), "4 walls + 2 obstacles + 1 robot = 7 bodies");
 
         // Create path planner
         AStarPathPlanner planner = new AStarPathPlanner(40, 30, true);

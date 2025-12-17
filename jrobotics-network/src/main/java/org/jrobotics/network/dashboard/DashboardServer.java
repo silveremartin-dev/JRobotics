@@ -25,7 +25,7 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
+
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
@@ -258,7 +258,7 @@ public class DashboardServer {
                         String requestLine = scanner.next();
                         String[] parts = requestLine.split(" ");
                         if (parts.length >= 2) {
-                            String method = parts[0];
+
                             String path = parts[1];
 
                             if (path.startsWith("/api/")) {

@@ -43,7 +43,23 @@ JRobotics is a comprehensive, modular robotics framework designed for hobbyists 
 - **Navigation** - GoToGoal reactive control
 - **Behavior Trees** - Sequence, Selector, Condition, Action nodes
 - **Decision Frameworks** - FSM patterns
-- **AI Integration** - Pluggable AIEngine interface
+- **Deep Learning** - DJL integration (PyTorch/TensorFlow) for Inference
+- **SLAM** - FastSLAM 2.0 and Occupancy Grid Mapping
+- **Reinforcement Learning** - DQN (Deep Q-Network) and PPO Agents
+- **Computer Vision** - Object Detection (YOLO/SSD)
+
+### 🐝 Swarm & Distributed
+
+- **Swarm Intelligence** - Boids flocking, Leader selection
+- **Distributed Shared Memory** - Synchronization across robots
+- **Federated Learning** - Distributed model training (FedAvg)
+- **Centralized Control** - Hive Mind patterns
+
+### 🛡️ Security & OTA
+
+- **Secure Transport** - TLS/SSL encryption
+- **Access Control** - RBAC (Role-Based Access Control)
+- **OTA Updates** - Remote firmware management and rollback
 
 ### ⚙️ Actuators
 
@@ -64,6 +80,7 @@ JRobotics is a comprehensive, modular robotics framework designed for hobbyists 
 - Peer-to-peer UDP communication
 - Server-mediated TCP protocols
 - Remote teleoperation (Master/Slave)
+- Web Dashboard
 - Pluggable NetworkTransport interface
 - [Networking Comparison](docs/NETWORKING.md)
 
@@ -79,6 +96,7 @@ JRobotics is a comprehensive, modular robotics framework designed for hobbyists 
 
 - Java 21 or higher
 - Maven 3.9+
+- (Optional) Docker for Swarm simulation
 
 ### Installation
 
@@ -99,9 +117,11 @@ mvn clean install
 ./run-3d-demo.bat         # Windows
 ./run-3d-demo.sh          # Linux/macOS
 
-# Performance benchmarks
-./run-benchmarks.bat      # Windows
-./run-benchmarks.sh       # Linux/macOS
+# CLI Tool
+java -jar jrobotics-cli/target/jrobotics-cli.jar --help
+
+# Visual Editor
+java -jar jrobotics-editor/target/jrobotics-editor.jar
 ```
 
 ### Basic Usage
@@ -128,13 +148,15 @@ jrobotics/
 ├── jrobotics-hal         # GPIO, I2C, SPI, Serial abstraction
 ├── jrobotics-sensor      # Sensors, Kalman/EKF, Complementary filter
 ├── jrobotics-actuator    # Motors, Servos, PID control
-├── jrobotics-processor   # A* planning, GoToGoal, Behavior Trees
+├── jrobotics-processor   # SLAM, Deep Learning, RL, Navigation
 ├── jrobotics-simulation  # Physics, Vector3Pool, Visualization
-├── jrobotics-network     # TCP/UDP, Remote control
+├── jrobotics-network     # TCP/UDP, Swarm DSM, Security, OTA
 ├── jrobotics-robot       # Robot implementations, Hardware adapters
-├── jrobotics-bridge      # ROS2, external frameworks
+├── jrobotics-bridge      # ROS2, Cloud adapters
 ├── jrobotics-benchmark   # JMH performance tests
-└── jrobotics-demo        # Demo applications
+├── jrobotics-demo        # Demo applications
+├── jrobotics-cli         # Command Line Interface tool
+└── jrobotics-editor      # Visual Behaviour Tree editor
 ```
 
 ## Documentation

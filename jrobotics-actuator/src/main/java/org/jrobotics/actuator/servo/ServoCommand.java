@@ -12,19 +12,18 @@ package org.jrobotics.actuator.servo;
 /**
  * Command for controlling servos.
  * 
+ * @param angle Target angle in degrees
+ * @param speed Movement speed (0.0-1.0, where 1.0 is maximum speed)
+ * @param hold  If true, hold position after reaching target
  * @author Silvère Martin-Michiellot
  * @author Gemini AI Assistant
  * @version 2.0.0
  * @since 2.0.0
  */
 public record ServoCommand(
-    /** Target angle in degrees */
-    double angle,
-    /** Movement speed (0.0-1.0, where 1.0 is maximum speed) */
-    double speed,
-    /** If true, hold position after reaching target */
-    boolean hold
-) {
+        double angle,
+        double speed,
+        boolean hold) {
     /**
      * Creates a servo command for position control.
      * 
@@ -34,7 +33,7 @@ public record ServoCommand(
     public static ServoCommand position(double angle) {
         return new ServoCommand(angle, 1.0, true);
     }
-    
+
     /**
      * Creates a servo command with speed control.
      * 
@@ -45,7 +44,7 @@ public record ServoCommand(
     public static ServoCommand position(double angle, double speed) {
         return new ServoCommand(angle, clamp(speed), true);
     }
-    
+
     /**
      * Creates a release command (move to angle and release holding torque).
      * 
@@ -55,7 +54,7 @@ public record ServoCommand(
     public static ServoCommand release(double angle) {
         return new ServoCommand(angle, 1.0, false);
     }
-    
+
     /**
      * Creates a center position command (90 degrees).
      * 
@@ -64,7 +63,7 @@ public record ServoCommand(
     public static ServoCommand center() {
         return position(90.0);
     }
-    
+
     private static double clamp(double value) {
         return Math.max(0.0, Math.min(1.0, value));
     }

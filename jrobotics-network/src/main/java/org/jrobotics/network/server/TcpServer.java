@@ -103,7 +103,7 @@ public class TcpServer extends AbstractNetworkNode {
             }
 
             String clientId = connectMsg.getSourceId();
-            ClientConnection conn = new ClientConnection(clientId, socket, in, out);
+            ClientConnection conn = new ClientConnection(clientId, socket, out);
             clients.put(clientId, conn);
             addPeer(clientId);
 
@@ -233,16 +233,13 @@ public class TcpServer extends AbstractNetworkNode {
     /**
      * Client connection holder.
      */
-    private static class ClientConnection {
         final String clientId;
         final Socket socket;
-        final ObjectInputStream in;
         final ObjectOutputStream out;
 
-        ClientConnection(String clientId, Socket socket, ObjectInputStream in, ObjectOutputStream out) {
+        ClientConnection(String clientId, Socket socket, ObjectOutputStream out) {
             this.clientId = clientId;
             this.socket = socket;
-            this.in = in;
             this.out = out;
         }
     }
