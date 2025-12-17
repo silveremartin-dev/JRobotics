@@ -233,6 +233,7 @@ public class TcpServer extends AbstractNetworkNode {
     /**
      * Client connection holder.
      */
+    private static class ClientConnection {
         final String clientId;
         final Socket socket;
         final ObjectOutputStream out;
