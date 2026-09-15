@@ -156,9 +156,8 @@ public class AStarPathPlanner {
                     neighbor.gScore = tentativeG;
                     neighbor.fScore = tentativeG + heuristic(nx, ny, goalX, goalY);
                     
-                    if (!openSet.contains(neighbor)) {
-                        openSet.add(neighbor);
-                    }
+                    openSet.remove(neighbor);
+                    openSet.add(neighbor);
                 }
             }
         }

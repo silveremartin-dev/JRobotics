@@ -150,7 +150,20 @@ public class OTAUpdateManager {
                 status = UpdateStatus.DOWNLOADING;
                 notifyListener("Downloading update " + updateInfo.getVersion());
 
-                Path downloadPath = firmwareDirectory.resolve("update-" + updateInfo.getVersion() + ".bin");
+                String safeVersion = updateInfo.getVersion().replaceAll("[^a-zA-Z0-9._-]", "");
+                if (safeVersion.isEmpty() || safeVersion.contains("..")) {
+                    logger.error("Invalid or malicious version string: {}", updateInfo.getVersion());
+                    status = UpdateStatus.ERROR;
+                    return false;
+                }
+
+                Path downloadPath = firmwareDirectory.resolve("update-" + safeVersion + ".bin").normalize();
+                if (!downloadPath.startsWith(firmwareDirectory.normalize())) {
+                    logger.error("Path traversal detected for version: {}", updateInfo.getVersion());
+                    status = UpdateStatus.ERROR;
+                    return false;
+                }
+
                 boolean downloaded = downloadFile(updateInfo.getDownloadUrl(), downloadPath);
 
                 if (!downloaded) {
@@ -247,10 +260,19 @@ public class OTAUpdateManager {
     }
 
     private boolean verifyChecksum(Path file, String expectedChecksum) {
+        if (expectedChecksum == null) {
+            return false;
+        }
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] fileBytes = Files.readAllBytes(file);
-            byte[] hash = digest.digest(fileBytes);
+            try (InputStream is = Files.newInputStream(file)) {
+                byte[] buffer = new byte[8192];
+                int bytesRead;
+                while ((bytesRead = is.read(buffer)) != -1) {
+                    digest.update(buffer, 0, bytesRead);
+                }
+            }
+            byte[] hash = digest.digest();
 
             StringBuilder hexString = new StringBuilder();
             for (byte b : hash) {
@@ -260,12 +282,19 @@ public class OTAUpdateManager {
                 hexString.append(hex);
             }
 
-            return hexString.toString().equalsIgnoreCase(expectedChecksum);
+            return hexString.toString().equalsIgnoreCase(expectedChecksum.trim());
 
         } catch (NoSuchAlgorithmException | IOException e) {
             logger.error("Checksum verification error", e);
             return false;
         }
+    }
+
+    /**
+     * Shuts down the OTA update executor service.
+     */
+    public void shutdown() {
+        executor.shutdownNow();
     }
 
     private boolean isNewerVersion(String remote, String local) {

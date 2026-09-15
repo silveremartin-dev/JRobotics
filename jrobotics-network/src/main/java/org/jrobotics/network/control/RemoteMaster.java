@@ -133,10 +133,10 @@ public class RemoteMaster {
         
         TelemetryData data = new TelemetryData(
             message.getSourceId(),
-            (Double) payload.getOrDefault("x", 0.0),
-            (Double) payload.getOrDefault("y", 0.0),
-            (Double) payload.getOrDefault("theta", 0.0),
-            (Double) payload.getOrDefault("battery", 100.0),
+            toDouble(payload.get("x"), 0.0),
+            toDouble(payload.get("y"), 0.0),
+            toDouble(payload.get("theta"), 0.0),
+            toDouble(payload.get("battery"), 100.0),
             message.getTimestamp()
         );
         
@@ -148,7 +148,7 @@ public class RemoteMaster {
     }
     
     private void handleCommandAck(Message message) {
-        Long seq = (Long) message.getPayload().get("sequence");
+        Long seq = toLong(message.getPayload().get("sequence"));
         if (seq != null) {
             CompletableFuture<Message> future = pendingResponses.remove(seq);
             if (future != null) {
@@ -158,13 +158,27 @@ public class RemoteMaster {
     }
     
     private void handleSensorData(Message message) {
-        Long seq = (Long) message.getPayload().get("request_sequence");
+        Long seq = toLong(message.getPayload().get("request_sequence"));
         if (seq != null) {
             CompletableFuture<Message> future = pendingResponses.remove(seq);
             if (future != null) {
                 future.complete(message);
             }
         }
+    }
+
+    private static double toDouble(Object obj, double defaultValue) {
+        if (obj instanceof Number) {
+            return ((Number) obj).doubleValue();
+        }
+        return defaultValue;
+    }
+
+    private static Long toLong(Object obj) {
+        if (obj instanceof Number) {
+            return ((Number) obj).longValue();
+        }
+        return null;
     }
     
     /**

@@ -65,6 +65,9 @@ public abstract class AbstractServoBank extends AbstractComponent implements Ser
     // Default implementation for bulk set (can be optimized by subclasses)
     @Override
     public void setPositions(int[] channels, double[] angles) {
+        if (channels == null || angles == null) {
+            return;
+        }
         if (channels.length != angles.length) {
             throw new IllegalArgumentException("Channels and angles arrays must have same length");
         }

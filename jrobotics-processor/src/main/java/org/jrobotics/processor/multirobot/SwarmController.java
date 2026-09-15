@@ -88,6 +88,8 @@ public class SwarmController extends AbstractProcessor<List<SwarmController.Neig
      */
     @Override
     protected double[] doProcess(java.util.List<Neighbor> neighbors) throws Exception {
+        List<Neighbor> allNeighbors = (neighbors != null) ? new java.util.ArrayList<>(neighbors) : new java.util.ArrayList<>();
+
         // Merge remote neighbors from DSM into the list if enabled
         if (dsm != null && lastPosition != null && lastVelocity != null) {
             List<DistributedEntry> entries = dsm.findEntries("swarm/");
@@ -113,9 +115,8 @@ public class SwarmController extends AbstractProcessor<List<SwarmController.Neig
                     double vx = remoteState.velocity[0] - lastVelocity[0];
                     double vy = remoteState.velocity[1] - lastVelocity[1];
 
-                    // Add as neighbor (can check distance here or let separate/align/cohesion
-                    // filter it)
-                    neighbors.add(new Neighbor(dx, dy, vx, vy));
+                    // Add as neighbor (can check distance here or let separate/align/cohesion filter it)
+                    allNeighbors.add(new Neighbor(dx, dy, vx, vy));
 
                 } catch (IllegalArgumentException e) {
                     // Mapping error, ignore bad entry
@@ -123,13 +124,13 @@ public class SwarmController extends AbstractProcessor<List<SwarmController.Neig
             }
         }
 
-        if (neighbors == null || neighbors.isEmpty()) {
+        if (allNeighbors.isEmpty()) {
             return new double[] { 0, 0 }; // No neighbors, keep current or wander
         }
 
-        double[] sep = separate(neighbors);
-        double[] ali = align(neighbors);
-        double[] coh = cohesion(neighbors);
+        double[] sep = separate(allNeighbors);
+        double[] ali = align(allNeighbors);
+        double[] coh = cohesion(allNeighbors);
 
         double ax = sep[0] * separationWeight + ali[0] * alignmentWeight + coh[0] * cohesionWeight;
         double ay = sep[1] * separationWeight + ali[1] * alignmentWeight + coh[1] * cohesionWeight;

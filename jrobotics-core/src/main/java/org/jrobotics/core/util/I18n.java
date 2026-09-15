@@ -84,8 +84,9 @@ public final class I18n {
      * @return the localized message, or the key if not found
      */
     public static String get(String key) {
+        if (key == null) return "";
         try {
-            return bundle.getString(key);
+            return bundle != null ? bundle.getString(key) : key;
         } catch (MissingResourceException e) {
             logger.warn("[{}] Missing i18n key: {}", System.currentTimeMillis(), key);
             return key;
@@ -104,8 +105,9 @@ public final class I18n {
      * @return the formatted localized message
      */
     public static String get(String key, Object... args) {
+        if (key == null) return "";
         try {
-            String pattern = bundle.getString(key);
+            String pattern = bundle != null ? bundle.getString(key) : key;
             return MessageFormat.format(pattern, args);
         } catch (MissingResourceException e) {
             logger.warn("[{}] Missing i18n key: {}", System.currentTimeMillis(), key);
@@ -120,7 +122,7 @@ public final class I18n {
      * @return true if the key exists
      */
     public static boolean hasKey(String key) {
-        return bundle.containsKey(key);
+        return key != null && bundle != null && bundle.containsKey(key);
     }
 
     /**
@@ -146,7 +148,11 @@ public final class I18n {
             logger.error("[{}] Failed to load resource bundle: {}",
                     System.currentTimeMillis(), e.getMessage());
             // Fall back to English
-            bundle = ResourceBundle.getBundle(BUNDLE_NAME, Locale.ENGLISH);
+            try {
+                bundle = ResourceBundle.getBundle(BUNDLE_NAME, Locale.ENGLISH);
+            } catch (MissingResourceException ex) {
+                bundle = null;
+            }
         }
     }
 }

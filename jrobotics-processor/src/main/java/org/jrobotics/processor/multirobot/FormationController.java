@@ -48,6 +48,7 @@ public class FormationController {
 
     private final List<String> robotIds;
     private final Map<String, Vector3> formationOffsets;
+    private final Map<String, Vector3> customOffsets;
     private FormationType formationType = FormationType.LINE;
     private double spacing = 1.5; // meters
     private String leaderId;
@@ -62,6 +63,7 @@ public class FormationController {
     public FormationController() {
         this.robotIds = new ArrayList<>();
         this.formationOffsets = new HashMap<>();
+        this.customOffsets = new HashMap<>();
     }
 
     /**
@@ -85,6 +87,7 @@ public class FormationController {
     public void removeRobot(String robotId) {
         robotIds.remove(robotId);
         formationOffsets.remove(robotId);
+        customOffsets.remove(robotId);
         if (robotId.equals(leaderId) && !robotIds.isEmpty()) {
             leaderId = robotIds.get(0);
         }
@@ -176,6 +179,18 @@ public class FormationController {
     }
 
     private void updateFormationOffsets() {
+        if (formationType == FormationType.CUSTOM) {
+            formationOffsets.clear();
+            for (String id : robotIds) {
+                if (id.equals(leaderId)) {
+                    formationOffsets.put(id, Vector3.ZERO);
+                } else {
+                    formationOffsets.put(id, customOffsets.getOrDefault(id, new Vector3(-spacing, 0, 0)));
+                }
+            }
+            return;
+        }
+
         formationOffsets.clear();
         int n = robotIds.size();
 
@@ -207,14 +222,14 @@ public class FormationController {
                 yield new Vector3(-row * spacing, side * row * spacing * 0.6, 0);
             }
             case CIRCLE -> {
-                double angle = 2 * Math.PI * index / totalFollowers;
+                double angle = (totalFollowers > 0) ? (2 * Math.PI * index / totalFollowers) : 0;
                 yield new Vector3(
                         -Math.cos(angle) * spacing,
                         Math.sin(angle) * spacing,
                         0);
             }
-            case CUSTOM -> formationOffsets.getOrDefault(
-                    robotIds.get(index + 1),
+            case CUSTOM -> customOffsets.getOrDefault(
+                    (index + 1 < robotIds.size()) ? robotIds.get(index + 1) : "",
                     new Vector3(-spacing, 0, 0));
         };
     }
@@ -223,7 +238,9 @@ public class FormationController {
      * Sets custom offset for a robot.
      */
     public void setCustomOffset(String robotId, double x, double y) {
-        formationOffsets.put(robotId, new Vector3(x, y, 0));
+        Vector3 offset = new Vector3(x, y, 0);
+        customOffsets.put(robotId, offset);
+        formationOffsets.put(robotId, offset);
     }
 
     /**

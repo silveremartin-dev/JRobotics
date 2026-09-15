@@ -295,6 +295,7 @@ public class DistributedSharedMemory implements Lifecycle {
                 group = InetAddress.getByName(groupAddress);
                 socket = new MulticastSocket(port);
                 socket.setTimeToLive(1);
+                socket.joinGroup(new InetSocketAddress(group, port), null);
             } catch (IOException e) {
                 throw new LifecycleException("Failed to init UDP transport", e);
             }
@@ -312,13 +313,19 @@ public class DistributedSharedMemory implements Lifecycle {
         public void stop() {
             active = false;
             if (socket != null && !socket.isClosed()) {
+                try {
+                    if (group != null) {
+                        socket.leaveGroup(new InetSocketAddress(group, port), null);
+                    }
+                } catch (Exception ignored) {
+                }
                 socket.close();
             }
         }
 
         @Override
         public void send(String message) throws Exception {
-            byte[] data = message.getBytes();
+            byte[] data = message.getBytes(java.nio.charset.StandardCharsets.UTF_8);
             DatagramPacket packet = new DatagramPacket(data, data.length, group, port);
             socket.send(packet);
         }
@@ -329,7 +336,7 @@ public class DistributedSharedMemory implements Lifecycle {
                 try {
                     DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
                     socket.receive(packet);
-                    String msg = new String(packet.getData(), 0, packet.getLength());
+                    String msg = new String(packet.getData(), 0, packet.getLength(), java.nio.charset.StandardCharsets.UTF_8);
                     if (handler != null) {
                         handler.accept(msg);
                     }

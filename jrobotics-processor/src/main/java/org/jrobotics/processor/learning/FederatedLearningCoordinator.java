@@ -120,7 +120,7 @@ public class FederatedLearningCoordinator {
      * @param model the model weights
      */
     public void setGlobalModel(double[] model) {
-        if (model.length != modelSize) {
+        if (model == null || model.length != modelSize) {
             throw new IllegalArgumentException("Model size mismatch");
         }
         this.globalModel = model.clone();
@@ -232,7 +232,7 @@ public class FederatedLearningCoordinator {
 
         try {
             ModelUpdate model = mapper.convertValue(value, ModelUpdate.class);
-            return model.weights;
+            return model != null && model.weights != null ? model.weights.clone() : null;
         } catch (IllegalArgumentException e) {
             logger.warn("Failed to parse global model");
             return null;

@@ -9,6 +9,8 @@
  */
 package org.jrobotics.network;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -40,7 +42,12 @@ public class NetworkMessage implements Message {
      * @param targetId the target ID (null for broadcast)
      * @param payload the message payload
      */
-    public NetworkMessage(MessageType type, String sourceId, String targetId, Map<String, Object> payload) {
+    @JsonCreator
+    public NetworkMessage(
+            @JsonProperty("type") MessageType type,
+            @JsonProperty("sourceId") String sourceId,
+            @JsonProperty("targetId") String targetId,
+            @JsonProperty("payload") Map<String, Object> payload) {
         this.type = type;
         this.sourceId = sourceId;
         this.targetId = targetId;

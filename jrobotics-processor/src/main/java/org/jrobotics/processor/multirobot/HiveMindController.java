@@ -210,8 +210,10 @@ public class HiveMindController extends AbstractProcessor<Void, Map<String, Hive
             // Target position: global goal + offset
             double[] targetPosition = new double[3];
             for (int i = 0; i < 3; i++) {
-                targetPosition[i] = globalGoal[i] + offset[i];
+                double g = (i < globalGoal.length) ? globalGoal[i] : 0.0;
+                targetPosition[i] = g + offset[i];
             }
+            command.targetPosition = targetPosition;
 
             // Proportional control towards target
             double kp = 0.5;

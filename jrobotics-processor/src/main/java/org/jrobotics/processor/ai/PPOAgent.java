@@ -283,7 +283,6 @@ public class PPOAgent extends AbstractProcessor<double[], double[]> implements R
     }
 
     private void updateActor(double[] state, double[] action, double advantage, double ratio) {
-        // Simplified policy gradient
         double[] mean = forwardActor(state);
         double[] hidden = new double[hiddenSize];
         for (int j = 0; j < hiddenSize; j++) {
@@ -294,20 +293,41 @@ public class PPOAgent extends AbstractProcessor<double[], double[]> implements R
             hidden[j] = Math.tanh(sum);
         }
 
-        // Gradient for output layer
+        // Gradients for output layer
+        double[] outputGrad = new double[actionSize];
         for (int j = 0; j < actionSize; j++) {
             double std = Math.exp(logStd[j]);
             double diff = action[j] - mean[j];
             double grad = (diff / (std * std)) * advantage;
-
-            // Tanh derivative
             double tanhDeriv = 1 - mean[j] * mean[j];
-            grad *= tanhDeriv;
+            outputGrad[j] = grad * tanhDeriv;
+        }
 
-            for (int i = 0; i < hiddenSize; i++) {
-                actorW2[i][j] += learningRateActor * grad * hidden[i];
+        // Gradients for hidden layer (computed before updating actorW2)
+        double[] hiddenGrad = new double[hiddenSize];
+        for (int j = 0; j < hiddenSize; j++) {
+            double sum = 0;
+            for (int k = 0; k < actionSize; k++) {
+                sum += outputGrad[k] * actorW2[j][k];
             }
-            actorB2[j] += learningRateActor * grad;
+            double tanhDeriv = 1 - hidden[j] * hidden[j];
+            hiddenGrad[j] = sum * tanhDeriv;
+        }
+
+        // Update output layer weights and biases
+        for (int j = 0; j < actionSize; j++) {
+            for (int i = 0; i < hiddenSize; i++) {
+                actorW2[i][j] += learningRateActor * outputGrad[j] * hidden[i];
+            }
+            actorB2[j] += learningRateActor * outputGrad[j];
+        }
+
+        // Update hidden layer weights and biases
+        for (int j = 0; j < hiddenSize; j++) {
+            for (int i = 0; i < stateSize; i++) {
+                actorW1[i][j] += learningRateActor * hiddenGrad[j] * state[i];
+            }
+            actorB1[j] += learningRateActor * hiddenGrad[j];
         }
     }
 
@@ -321,11 +341,26 @@ public class PPOAgent extends AbstractProcessor<double[], double[]> implements R
             hidden[j] = Math.tanh(sum);
         }
 
+        // Hidden layer gradients (computed before updating criticW2)
+        double[] hiddenGrad = new double[hiddenSize];
+        for (int j = 0; j < hiddenSize; j++) {
+            double tanhDeriv = 1 - hidden[j] * hidden[j];
+            hiddenGrad[j] = (tdError * criticW2[j][0]) * tanhDeriv;
+        }
+
         // Update output weights
         for (int i = 0; i < hiddenSize; i++) {
             criticW2[i][0] += learningRateCritic * tdError * hidden[i];
         }
         criticB2 += learningRateCritic * tdError;
+
+        // Update hidden weights and biases
+        for (int j = 0; j < hiddenSize; j++) {
+            for (int i = 0; i < stateSize; i++) {
+                criticW1[i][j] += learningRateCritic * hiddenGrad[j] * state[i];
+            }
+            criticB1[j] += learningRateCritic * hiddenGrad[j];
+        }
     }
 
     private double clip(double value, double min, double max) {

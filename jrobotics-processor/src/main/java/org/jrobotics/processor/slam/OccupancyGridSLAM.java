@@ -88,7 +88,9 @@ public class OccupancyGridSLAM {
      * @param maxRange   sensor max range
      */
     public void integrateScan(double[] scanRanges, double[] scanAngles, double maxRange) {
-        for (int i = 0; i < scanRanges.length; i++) {
+        if (scanRanges == null || scanAngles == null) return;
+        int count = Math.min(scanRanges.length, scanAngles.length);
+        for (int i = 0; i < count; i++) {
             double range = scanRanges[i];
             double angle = robotTheta + scanAngles[i];
 

@@ -98,6 +98,11 @@ public class SecureTransport {
         // Configure protocols
         socket.setEnabledProtocols(new String[] { "TLSv1.3", "TLSv1.2" });
 
+        // Enable TLS hostname verification to prevent MitM attacks
+        SSLParameters params = socket.getSSLParameters();
+        params.setEndpointIdentificationAlgorithm("HTTPS");
+        socket.setSSLParameters(params);
+
         // Start handshake
         socket.startHandshake();
 
@@ -123,6 +128,12 @@ public class SecureTransport {
         SSLSocketFactory factory = sslContext.getSocketFactory();
         SSLSocket sslSocket = (SSLSocket) factory.createSocket(socket, host, port, autoClose);
         sslSocket.setEnabledProtocols(new String[] { "TLSv1.3", "TLSv1.2" });
+
+        // Enable TLS hostname verification
+        SSLParameters params = sslSocket.getSSLParameters();
+        params.setEndpointIdentificationAlgorithm("HTTPS");
+        sslSocket.setSSLParameters(params);
+
         sslSocket.startHandshake();
 
         return sslSocket;

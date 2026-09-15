@@ -64,6 +64,7 @@ public final class Vector3Pool {
         } else {
             v.set(0, 0, 0);
         }
+        v.inUse = true;
         return v;
     }
 
@@ -76,6 +77,7 @@ public final class Vector3Pool {
             v = new MutableVector3();
         }
         v.set(x, y, z);
+        v.inUse = true;
         return v;
     }
 
@@ -83,7 +85,8 @@ public final class Vector3Pool {
      * Releases a vector back to the pool.
      */
     public static void release(MutableVector3 v) {
-        if (v != null) {
+        if (v != null && v.inUse) {
+            v.inUse = false;
             pool.offer(v);
         }
     }
@@ -100,6 +103,7 @@ public final class Vector3Pool {
      */
     public static final class MutableVector3 {
         private double x, y, z;
+        private volatile boolean inUse = false;
 
         public MutableVector3() {
         }

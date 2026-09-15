@@ -9,7 +9,10 @@
  */
 package org.jrobotics.network.security;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Role-Based Access Control (RBAC) for Robot Dashboard and API.
@@ -36,8 +39,8 @@ import java.util.*;
  */
 public class RBACManager {
 
-    private final Map<String, Role> roles = new HashMap<>();
-    private final Map<String, User> users = new HashMap<>();
+    private final Map<String, Role> roles = new ConcurrentHashMap<>();
+    private final Map<String, User> users = new ConcurrentHashMap<>();
 
     /**
      * Creates a new RBAC manager with default roles.
@@ -92,18 +95,35 @@ public class RBACManager {
     }
 
     /**
-     * Authenticates a user.
+     * Authenticates a user using constant-time hash comparison.
      *
      * @param username     the username
      * @param passwordHash the password hash
      * @return the user if authenticated, null otherwise
      */
     public User authenticate(String username, String passwordHash) {
+        if (username == null || passwordHash == null) {
+            return null;
+        }
         User user = users.get(username);
-        if (user != null && user.getPasswordHash().equals(passwordHash)) {
-            return user;
+        if (user != null && user.getPasswordHash() != null) {
+            byte[] expected = user.getPasswordHash().getBytes(StandardCharsets.UTF_8);
+            byte[] actual = passwordHash.getBytes(StandardCharsets.UTF_8);
+            if (MessageDigest.isEqual(expected, actual)) {
+                return user;
+            }
         }
         return null;
+    }
+
+    /**
+     * Gets a user by username.
+     *
+     * @param username the username
+     * @return the user or null if not found
+     */
+    public User getUser(String username) {
+        return username != null ? users.get(username) : null;
     }
 
     /**
@@ -210,8 +230,8 @@ public class RBACManager {
         private final String username;
         private final String passwordHash;
         private final Role role;
-        private String token;
-        private long tokenExpiry;
+        private volatile String token;
+        private volatile long tokenExpiry;
 
         public User(String username, String passwordHash, Role role) {
             this.username = username;
@@ -231,7 +251,7 @@ public class RBACManager {
             return role;
         }
 
-        public void setToken(String token, long expiryMs) {
+        public synchronized void setToken(String token, long expiryMs) {
             this.token = token;
             this.tokenExpiry = System.currentTimeMillis() + expiryMs;
         }
@@ -244,7 +264,7 @@ public class RBACManager {
             return token != null && System.currentTimeMillis() < tokenExpiry;
         }
 
-        public void invalidateToken() {
+        public synchronized void invalidateToken() {
             this.token = null;
             this.tokenExpiry = 0;
         }

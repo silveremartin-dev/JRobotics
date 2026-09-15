@@ -28,6 +28,7 @@ import java.nio.charset.StandardCharsets;
 
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -221,6 +222,11 @@ public class DashboardServer {
         private final int port;
         private volatile boolean running = true;
         private ServerSocket socket;
+        private final ExecutorService httpExecutor = Executors.newCachedThreadPool(r -> {
+            Thread t = new Thread(r, "Dashboard-HTTP-Worker");
+            t.setDaemon(true);
+            return t;
+        });
 
         public HttpServer(int port) {
             this.port = port;
@@ -231,9 +237,10 @@ public class DashboardServer {
                 socket = new ServerSocket(port);
                 logger.info("HTTP Server listening on port {}", port);
 
-                while (running) {
+                while (running && !socket.isClosed()) {
                     Socket client = socket.accept();
-                    handle(client);
+                    client.setSoTimeout(5000); // 5s timeout to prevent slowloris
+                    httpExecutor.submit(() -> handle(client));
                 }
             } catch (IOException e) {
                 if (running)
@@ -243,8 +250,9 @@ public class DashboardServer {
 
         public void stop() throws IOException {
             running = false;
-            if (socket != null)
+            if (socket != null && !socket.isClosed())
                 socket.close();
+            httpExecutor.shutdownNow();
         }
 
         private void handle(Socket client) {

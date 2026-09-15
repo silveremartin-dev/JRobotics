@@ -99,8 +99,11 @@ public abstract class RoboticArm extends AbstractRobot {
      * @param angles array of angles in radians
      */
     public void setJointAngles(double[] angles) {
-        if (angles.length != links.size()) {
+        if (angles == null || angles.length != links.size()) {
             throw new IllegalArgumentException("Angle count mismatch: expected " + links.size());
+        }
+        if (currentJointAngles == null || currentJointAngles.length != links.size()) {
+            currentJointAngles = new double[links.size()];
         }
         System.arraycopy(angles, 0, currentJointAngles, 0, angles.length);
         // In a real implementation, this would command actuators
@@ -122,6 +125,6 @@ public abstract class RoboticArm extends AbstractRobot {
      * @return array of angles in radians
      */
     public double[] getJointAngles() {
-        return currentJointAngles.clone();
+        return currentJointAngles != null ? currentJointAngles.clone() : new double[0];
     }
 }

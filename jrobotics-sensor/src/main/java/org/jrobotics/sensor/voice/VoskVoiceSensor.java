@@ -108,15 +108,15 @@ public class VoskVoiceSensor extends AbstractSensor<String> implements VoiceSens
         }
     }
 
-    // Simplified JSON parsing for Vosk result
+    private static final java.util.regex.Pattern TEXT_PATTERN = 
+            java.util.regex.Pattern.compile("\"text\"\\s*:\\s*\"([^\"]*)\"");
+
+    // Robust JSON parsing for Vosk result
     private String parseText(String json) {
-        int idx = json.indexOf("\"text\" :");
-        if (idx != -1) {
-            int start = json.indexOf("\"", idx + 8);
-            int end = json.indexOf("\"", start + 1);
-            if (start != -1 && end != -1) {
-                return json.substring(start + 1, end).trim();
-            }
+        if (json == null) return "";
+        java.util.regex.Matcher matcher = TEXT_PATTERN.matcher(json);
+        if (matcher.find()) {
+            return matcher.group(1).trim();
         }
         return "";
     }

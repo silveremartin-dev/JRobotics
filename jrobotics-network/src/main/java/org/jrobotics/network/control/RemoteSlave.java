@@ -105,8 +105,8 @@ public class RemoteSlave {
         boolean success = false;
 
         if ("velocity".equals(command) && velocityHandler != null) {
-            double linear = (Double) payload.getOrDefault("linear", 0.0);
-            double angular = (Double) payload.getOrDefault("angular", 0.0);
+            double linear = toDouble(payload.get("linear"), 0.0);
+            double angular = toDouble(payload.get("angular"), 0.0);
             velocityHandler.accept(linear, angular);
             success = true;
             logger.debug("[{}] Velocity command: linear={}, angular={}",
@@ -135,13 +135,20 @@ public class RemoteSlave {
             String sensorId = (String) payload.get("sensor_id");
             Map<String, Object> sensorData = sensorDataProvider.apply(sensorId);
 
-            Map<String, Object> responsePayload = new HashMap<>(sensorData);
+            Map<String, Object> responsePayload = sensorData != null ? new HashMap<>(sensorData) : new HashMap<>();
             responsePayload.put("request_sequence", message.getSequenceNumber());
 
             NetworkMessage response = NetworkMessage.create(
                     MessageType.SENSOR_DATA, networkNode.getNodeId(), message.getSourceId(), responsePayload);
             networkNode.send(response);
         }
+    }
+
+    private static double toDouble(Object obj, double defaultValue) {
+        if (obj instanceof Number) {
+            return ((Number) obj).doubleValue();
+        }
+        return defaultValue;
     }
 
     private void handleEmergencyStop(Message message) {

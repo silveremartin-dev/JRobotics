@@ -102,11 +102,9 @@ public class FastSLAMProcessor extends AbstractProcessor<LidarScan, double[]> {
     private void updateWeights(LidarScan scan) {
         // Simplified weight update based on scan consistency
         // In real FastSLAM, we'd check against each particle's map
+        int pointsCount = (scan != null && scan.getPoints() != null) ? scan.getPoints().size() : 0;
         for (Particle p : particles) {
-            double score = 0;
-            // Simplified scan-matching score: count matching points
-            // In production, compare against particle's occupancy grid
-            score += scan.getPoints().size();
+            double score = pointsCount;
             p.weight = Math.max(score, 0.001); // Prevent zero weights
         }
 

@@ -195,24 +195,17 @@ public class UdpPeerNode extends AbstractNetworkNode {
         peerAddresses.clear();
     }
 
+    private final com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+
     /**
-     * Serializes a message to bytes.
+     * Serializes a message to JSON bytes.
      * 
      * @param message the message
      * @return the serialized bytes
      * @throws IOException if serialization fails
      */
     private byte[] serialize(Message message) throws IOException {
-        try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                ObjectOutputStream oos = new ObjectOutputStream(bos)) {
-            oos.writeObject(message.getType().name());
-            oos.writeObject(message.getSourceId());
-            oos.writeObject(message.getTargetId());
-            oos.writeLong(message.getTimestamp());
-            oos.writeLong(message.getSequenceNumber());
-            oos.writeObject(new HashMap<>(message.getPayload()));
-            return bos.toByteArray();
-        }
+        return mapper.writeValueAsBytes(message);
     }
 
     /**
@@ -222,18 +215,9 @@ public class UdpPeerNode extends AbstractNetworkNode {
      * @param length the data length
      * @return the message, or null if failed
      */
-    @SuppressWarnings("unchecked")
     private Message deserialize(byte[] data, int length) {
-        try (ByteArrayInputStream bis = new ByteArrayInputStream(data, 0, length);
-                ObjectInputStream ois = new ObjectInputStream(bis)) {
-            MessageType type = MessageType.valueOf((String) ois.readObject());
-            String sourceId = (String) ois.readObject();
-            String targetId = (String) ois.readObject();
-            ois.readLong(); // timestamp
-            ois.readLong(); // sequence
-            Map<String, Object> payload = (Map<String, Object>) ois.readObject();
-
-            return new NetworkMessage(type, sourceId, targetId, payload);
+        try {
+            return mapper.readValue(data, 0, length, NetworkMessage.class);
         } catch (Exception e) {
             logger.error("[{}] Deserialize failed: {}", System.currentTimeMillis(), e.getMessage());
             return null;

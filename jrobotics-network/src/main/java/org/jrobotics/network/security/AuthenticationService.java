@@ -79,12 +79,17 @@ public class AuthenticationService {
      * @return true if token is valid
      */
     public boolean validateToken(String username, String token) {
-        RBACManager.User user = rbacManager.authenticate(username,
-                getPasswordHashByUsername(username));
-        if (user == null)
+        if (username == null || token == null) {
             return false;
+        }
+        RBACManager.User user = rbacManager.getUser(username);
+        if (user == null || !user.isTokenValid() || user.getToken() == null) {
+            return false;
+        }
 
-        return user.isTokenValid() && user.getToken().equals(token);
+        byte[] expected = user.getToken().getBytes(StandardCharsets.UTF_8);
+        byte[] actual = token.getBytes(StandardCharsets.UTF_8);
+        return MessageDigest.isEqual(expected, actual);
     }
 
     /**
@@ -93,8 +98,12 @@ public class AuthenticationService {
      * @param username the username
      */
     public void logout(String username) {
-        // Re-authenticate to get user object (simplified)
-        // In production, you'd have a user lookup method
+        if (username != null) {
+            RBACManager.User user = rbacManager.getUser(username);
+            if (user != null) {
+                user.invalidateToken();
+            }
+        }
         logger.info("User logged out: {}", username);
     }
 
@@ -149,12 +158,6 @@ public class AuthenticationService {
         byte[] tokenBytes = new byte[32];
         secureRandom.nextBytes(tokenBytes);
         return Base64.getUrlEncoder().withoutPadding().encodeToString(tokenBytes);
-    }
-
-    private String getPasswordHashByUsername(String username) {
-        // This is a simplified implementation
-        // In production, you'd have a proper user lookup
-        return null;
     }
 
     /**

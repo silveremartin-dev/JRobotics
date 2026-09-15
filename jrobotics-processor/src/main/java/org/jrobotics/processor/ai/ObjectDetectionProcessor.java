@@ -123,6 +123,7 @@ public class ObjectDetectionProcessor extends AbstractProcessor<Image, List<Obje
      * @throws IOException    if I/O error occurs
      */
     public void loadYoloV5Model() throws ModelException, IOException {
+        closeCurrentModel();
         logger.info("Loading YOLOv5 model...");
 
         Translator<Image, DetectedObjects> translator = YoloV5Translator.builder()
@@ -150,6 +151,7 @@ public class ObjectDetectionProcessor extends AbstractProcessor<Image, List<Obje
      * @throws IOException    if I/O error occurs
      */
     public void loadSSDModel() throws ModelException, IOException {
+        closeCurrentModel();
         logger.info("Loading SSD model...");
 
         Criteria<Image, DetectedObjects> criteria = Criteria.builder()
@@ -161,6 +163,17 @@ public class ObjectDetectionProcessor extends AbstractProcessor<Image, List<Obje
         model = criteria.loadModel();
         predictor = model.newPredictor();
         logger.info("SSD model loaded successfully");
+    }
+
+    private void closeCurrentModel() {
+        if (predictor != null) {
+            try { predictor.close(); } catch (Exception ignored) {}
+            predictor = null;
+        }
+        if (model != null) {
+            try { model.close(); } catch (Exception ignored) {}
+            model = null;
+        }
     }
 
     /**

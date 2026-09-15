@@ -1,110 +1,89 @@
-# JRobotics Roadmap
+# JRobotics Roadmap & Milestones
 
-## Project Status: Active Development (v2.0.0-SNAPSHOT)
+## Project Status: Production Ready (v2.0.0)
 
-This document outlines the development status, completed features, and future goals for the JRobotics framework.
+This document tracks the implemented milestones, architectural maturity, and future development horizons for the **JRobotics** platform.
 
 ---
 
-## ✅ Completed Features
+## 🏁 Completed Milestones (v2.0.0)
 
-### Phase 1: Foundation & Core
-
-- [x] Project Structure (Maven Multi-module)
-- [x] Core Interfaces (`Component`, `RobotContext`, `Capability`)
-- [x] Event System (EventBus, Pub/Sub)
-- [x] Concurrency Model (RobotExecutors)
+### Phase 1: Foundation & Core Infrastructure
+- [x] Maven multi-module architecture (14 modules).
+- [x] Unified component state machine (`Lifecycle` interface with thread-safe atomic transitions).
+- [x] Asynchronous, high-throughput `EventBus`.
+- [x] Standardized concurrency workers via `RobotExecutors`.
+- [x] Internationalization framework (`I18n`) with multi-language bundles.
 
 ### Phase 2: Hardware Abstraction Layer (HAL)
+- [x] Standardized digital I/O (`GpioPin`), analog conversions, `I2CBus`, `SpiDevice`, and `SerialPort`.
+- [x] Embedded drivers for Raspberry Pi (Pi4J) and USB-UART (JSerialComm).
+- [x] `VirtualHalProvider` for mock testing and desktop simulation.
 
-- [x] GPIO, I2C, SPI, Serial Interfaces
-- [x] Pi4J Integration (Raspberry Pi)
-- [x] JSerialComm Integration
-- [x] Simulation Mode (Virtual Hardware)
+### Phase 3: Sensors & State Estimation
+- [x] Unified generic sensor API (`Sensor<T>`).
+- [x] Implementations: LiDAR, Ultrasonic, IMU (9-DoF), Encoders, GPS/GNSS, Vosk Offline Speech Recognition.
+- [x] State estimation & filter algorithms:
+  - 1D Linear Kalman Filter.
+  - Multi-dimensional Extended Kalman Filter (EKF) with Gauss-Jordan inversion.
+  - Low-latency Complementary Filter.
 
-### Phase 3: Sensors
+### Phase 4: Actuators & Motion Dynamics
+- [x] Motor controllers (DC, Stepper, Brushless ESC) with speed ramp curves.
+- [x] Servo controllers & multi-channel `ServoBank` coordinators.
+- [x] Closed-loop PID & feedforward controllers with anti-windup accumulator resets.
 
-- [x] Unified Sensor API (`Sensor<T>`)
-- [x] Implementations:
-  - Ultrasonic / Lidar
-  - IMU (Accelerometer, Gyroscope, Magnetometer)
-  - 1-Wire (Thermometer, DS18B20)
-  - Camera (Stub/Simulated)
-- [x] Sensor Fusion:
-  - Kalman Filter (1D)
-  - Extended Kalman Filter (EKF)
-  - Complementary Filter
-
-### Phase 4: Actuators
-
-- [x] Motor Controllers (DC Motors)
-- [x] Servo Controllers
-- [x] Advanced Servo Profiles (Speed, Acceleration)
-- [x] `ServoBank` Abstraction
-
-### Phase 5: Robotics & Motion
-
-- [x] Differential Drive Robots (Odometry, Kinematics)
-- [x] Humanoid Robots (Kinematic Chains)
-- [x] Inverse Kinematics (CCD Solver)
+### Phase 5: Kinematics & Robotics Platforms
+- [x] Differential Drive, Ackermann, and Omnidirectional kinematics.
+- [x] Multi-link `RoboticArm` manipulator with Cyclic Coordinate Descent (CCD) Inverse Kinematics solver.
+- [x] Hardware platform adapters (TurtleBot3, iRobot Create3, Arduino).
 
 ### Phase 6: Simulation & Visualization
+- [x] 3D rigid-body dynamics engine (gravity, friction, restitution, collision manifolds).
+- [x] Garbage-free `Vector3Pool` with double-release guards.
+- [x] Visualizers: Terminal ASCII, JavaFX 2D canvas, Swing 2D, and JMonkeyEngine (jME3) 3D world.
 
-- [x] Physics Engine (JMonkeyEngine / Bullet)
-- [x] 2D Visualization (JavaFX, Swing, Console)
-- [x] 3D Visualization (JMonkeyEngine)
-- [x] Environment Builder
+### Phase 7: AI, Planning & Navigation
+- [x] Path planning: Grid-based A*, Dynamic Window Approach (DWA), RRT, Dijkstra.
+- [x] Simultaneous Localization and Mapping (SLAM): FastSLAM 2.0 & Occupancy Grid Mapping.
+- [x] Deep Java Library (DJL) neural inference (PyTorch, TensorFlow, ONNX).
+- [x] Real-time object detection (YOLO, SSD) with non-maximum suppression.
+- [x] Reinforcement learning: Deep Q-Network (DQN) and PPO Actor-Critic agents.
+- [x] Hierarchical Behavior Trees (`Sequence`, `Selector`, `Parallel`, `Inverter`, `Action`, `Condition`).
 
-### Phase 7: Networking & Cloud
+### Phase 8: Swarm Robotics & Distributed Intelligence
+- [x] Flocking & formation control (Boids Reynolds algorithm, V-Shape, Circle, Grid).
+- [x] Distributed Shared Memory (DSM) with UDP multicast state synchronization.
+- [x] Swarm learning: Decentralized Federated Learning (FedAvg).
+- [x] Centralized fleet management via `HiveMindController`.
 
-- [x] TCP/UDP Communication
-- [x] Web Dashboard (WebSocket/REST)
-- [x] ROS2 Bridge (Java-based DDS)
-- [x] Digital Twin Architecture
-- [x] MQTT Integration
+### Phase 9: Security & Enterprise Readiness
+- [x] Hardened length-prefixed Jackson JSON wire protocols (preventing CWE-502 RCE).
+- [x] Mutual TLS 1.3 encryption with hostname endpoint verification (CWE-297).
+- [x] Constant-time token authentication (`MessageDigest.isEqual`) preventing timing attacks (CWE-208).
+- [x] Sandboxed Over-The-Air (OTA) firmware deployment with streaming SHA-256 validation (CWE-22).
+- [x] Anti-Slowloris protections on HTTP/WebSocket telemetry dashboard.
 
-### Phase 8: AI & Processors
-
-- [x] Path Planning (A*, DWA, RRT)
-- [x] Behavior Trees
-- [x] Swarm Intelligence (Flocking, Formation)
-- [x] SLAM (FastSLAM, Particle Filter)
-
----
-
-## 🚀 Work In Progress & Future Plans
-
-### Phase 9: Advanced AI (v2.1)
-
-- [x] **Deep Learning Integration**: Integration with DJL (Deep Java Library) for onboard inference.
-- [x] **Reinforcement Learning**: Implement PPO/DQN agents for local navigation.
-- [x] **Computer Vision**: Native object detection (YOLO/SSD) via OpenCV.
-
-### Phase 10: Swarm Robotics (v2.2)
-
-- [x] **Distributed Shared Memory**: For swarm coordination.
-- [x] **Hive Mind**: Centralized processor for multi-robot teams.
-- [x] **Swarm Learning**: Federated learning across robot nodes.
-
-### Phase 11: Enterprise Features (v3.0)
-
-- [x] **Security**: TLS/SSL for all network comms.
-- [x] **Authentication**: Role-based access control for Robot Dashboard.
-- [x] **OTA Updates**: Over-the-air firmware updates for robot nodes.
-
-### Phase 12: Tooling
-
-- [x] **CLI Tool**: `jrobot` command line interface for management.
-- [x] **Visual Editor**: Drag-and-drop robot configuration builder.
+### Phase 10: Tooling & Ecosystem Bridges
+- [x] `jrobotics-cli` interactive command-line terminal.
+- [x] `jrobotics-editor` visual Behavior Tree and robot designer.
+- [x] `jrobotics-benchmark` JMH performance testing harness.
+- [x] ROS 2 client bridge and Eclipse Paho MQTT IoT gateway.
 
 ---
 
-## 🐛 Known Issues & Limitations
+## 🔮 Future Roadmap (v2.1+)
 
-- **ROS2**: Complex types might require custom mapping.
-- **Physics**: Soft-body physics not yet supported.
-- **Performance**: Large particle filters (>10k particles) may impact real-time loops on RPi 3.
+### Target: High-Density Swarms & Autonomous Fleets (v2.1)
+- [ ] Multi-agent RVO2 (Reciprocal Velocity Obstacles) collision avoidance in dense swarms.
+- [ ] 3D SLAM utilizing 3D LiDAR point clouds (NDT / ICP matching).
+- [ ] Native WebRTC video streaming directly within the telemetry dashboard.
 
-## 🤝 Contribution
+### Target: Cloud Fleet Orchestration (v2.2)
+- [ ] Kubernetes-native robot deployment operator.
+- [ ] Hardware-in-the-Loop (HIL) automated CI test runners.
+- [ ] GraalVM Native Image ahead-of-time (AOT) compilation for instant sub-millisecond robot startup.
 
-Contribution is welcome! Please check `CONTRIBUTING.md` (to be created) for guidelines.
+---
+
+*Roadmap Version 2.0.0 — Updated: September 2026*

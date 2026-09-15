@@ -261,16 +261,24 @@ public class DQNAgent extends AbstractProcessor<double[], Integer> implements Re
             hidden[j] = Math.max(0, sum);
         }
 
+        // Compute hidden layer gradients before mutating output weights
+        double[] hiddenGrad = new double[hiddenSize];
+        for (int j = 0; j < hiddenSize; j++) {
+            if (hidden[j] > 0) { // ReLU derivative
+                hiddenGrad[j] = tdError * weightsHiddenOutput[j][action];
+            }
+        }
+
         // Update output layer weights
         for (int i = 0; i < hiddenSize; i++) {
             weightsHiddenOutput[i][action] += learningRate * tdError * hidden[i];
         }
         biasOutput[action] += learningRate * tdError;
 
-        // Update hidden layer weights (simplified, only for the chosen action path)
+        // Update hidden layer weights using pre-computed gradients
         for (int j = 0; j < hiddenSize; j++) {
-            if (hidden[j] > 0) { // ReLU derivative
-                double grad = tdError * weightsHiddenOutput[j][action];
+            if (hidden[j] > 0) {
+                double grad = hiddenGrad[j];
                 for (int i = 0; i < stateSize; i++) {
                     weightsInputHidden[i][j] += learningRate * grad * state[i];
                 }

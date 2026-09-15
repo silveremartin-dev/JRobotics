@@ -98,10 +98,10 @@ public class DynamicWindowApproach {
 
         // Sample velocity space
         for (int vi = 0; vi < vSamples; vi++) {
-            double v = minV + (maxVLimit - minV) * vi / (vSamples - 1);
+            double v = (vSamples <= 1) ? minV : minV + (maxVLimit - minV) * vi / (vSamples - 1);
 
             for (int wi = 0; wi < wSamples; wi++) {
-                double w = minW + (maxWLimit - minW) * wi / (wSamples - 1);
+                double w = (wSamples <= 1) ? minW : minW + (maxWLimit - minW) * wi / (wSamples - 1);
 
                 // Simulate trajectory
                 double[] endState = simulateTrajectory(

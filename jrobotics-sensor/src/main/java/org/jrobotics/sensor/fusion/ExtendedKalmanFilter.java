@@ -252,20 +252,62 @@ public class ExtendedKalmanFilter {
     }
     
     private double[] invert(double[] M, int n) {
-        // Simple inversion for small matrices (2x2, 3x3)
         if (n == 1) {
-            return new double[]{1.0 / M[0]};
+            double v = M[0];
+            return new double[]{Math.abs(v) < 1e-12 ? 1e12 : 1.0 / v};
         }
         if (n == 2) {
             double det = M[0] * M[3] - M[1] * M[2];
-            if (Math.abs(det) < 1e-10) det = 1e-10;
+            if (Math.abs(det) < 1e-12) det = (det < 0 ? -1e-12 : 1e-12);
             return new double[]{M[3]/det, -M[1]/det, -M[2]/det, M[0]/det};
         }
-        // For larger matrices, use pseudo-inverse or proper library
-        // Simplified: return identity
-        double[] I = new double[n * n];
-        for (int i = 0; i < n; i++) I[i * n + i] = 1.0;
-        return I;
+        
+        // Gauss-Jordan elimination with partial pivoting for n >= 3
+        double[][] a = new double[n][2 * n];
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                a[i][j] = M[i * n + j];
+            }
+            a[i][n + i] = 1.0;
+        }
+
+        for (int i = 0; i < n; i++) {
+            int maxRow = i;
+            for (int k = i + 1; k < n; k++) {
+                if (Math.abs(a[k][i]) > Math.abs(a[maxRow][i])) {
+                    maxRow = k;
+                }
+            }
+            double[] temp = a[i];
+            a[i] = a[maxRow];
+            a[maxRow] = temp;
+
+            double pivot = a[i][i];
+            if (Math.abs(pivot) < 1e-12) {
+                pivot = pivot < 0 ? -1e-12 : 1e-12;
+            }
+
+            for (int j = 0; j < 2 * n; j++) {
+                a[i][j] /= pivot;
+            }
+
+            for (int k = 0; k < n; k++) {
+                if (k != i) {
+                    double factor = a[k][i];
+                    for (int j = 0; j < 2 * n; j++) {
+                        a[k][j] -= factor * a[i][j];
+                    }
+                }
+            }
+        }
+
+        double[] inv = new double[n * n];
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                inv[i * n + j] = a[i][n + j];
+            }
+        }
+        return inv;
     }
     
     // Functional interfaces

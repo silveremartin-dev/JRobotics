@@ -45,7 +45,7 @@ public class CcdInverseKinematicsSolver implements InverseKinematicsSolver {
      * @param tolerance     distance tolerance for convergence
      */
     public CcdInverseKinematicsSolver(List<Double> linkLengths, int maxIterations, double tolerance) {
-        this.linkLengths = new ArrayList<>(linkLengths);
+        this.linkLengths = linkLengths != null ? new ArrayList<>(linkLengths) : new ArrayList<>();
         this.maxIterations = maxIterations;
         this.tolerance = tolerance;
     }
@@ -61,13 +61,10 @@ public class CcdInverseKinematicsSolver implements InverseKinematicsSolver {
     public double[] solve(double targetX, double targetY, double targetZ,
             double targetRoll, double targetPitch, double targetYaw) {
 
-        // Simplified 2D/3D planar CCD for demonstration.
-        // Full 3D requires quaternion math and correct axis of rotation per joint.
-        // This implementation assumes a planar arm in X-Y plane for simplicity (common
-        // for simple arms).
-        // For general 3D, we need joint axes.
-
         int numJoints = linkLengths.size();
+        if (numJoints == 0) {
+            return new double[0];
+        }
         double[] angles = new double[numJoints]; // Initial angles 0
 
         // Forward Kinematics to find current end-effector position
@@ -100,13 +97,12 @@ public class CcdInverseKinematicsSolver implements InverseKinematicsSolver {
                 angles[i] += diff;
 
                 // Normalize to -PI to PI
-                if (angles[i] > Math.PI)
+                while (angles[i] > Math.PI)
                     angles[i] -= 2 * Math.PI;
-                if (angles[i] < -Math.PI)
+                while (angles[i] < -Math.PI)
                     angles[i] += 2 * Math.PI;
 
                 // Re-calculate end effector for next joint
-                // (Optimization: can update explicitly)
             }
             endEffector = forwardKinematics(angles);
         }

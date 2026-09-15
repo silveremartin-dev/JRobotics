@@ -60,6 +60,7 @@ public class DeepLearningProcessor extends AbstractProcessor<Image, Classificati
     private static final Logger logger = LoggerFactory.getLogger(DeepLearningProcessor.class);
 
     private ZooModel<Image, Classifications> model;
+    private Model localModel;
     private Predictor<Image, Classifications> predictor;
     private String modelPath;
     private String modelName;
@@ -124,6 +125,7 @@ public class DeepLearningProcessor extends AbstractProcessor<Image, Classificati
      * @throws IOException    if I/O error occurs
      */
     public void loadZooModel(String application, String modelName) throws ModelException, IOException {
+        closeCurrentModel();
         logger.info("Loading model from zoo: {}/{}", application, modelName);
 
         Translator<Image, Classifications> translator = ImageClassificationTranslator.builder()
@@ -158,6 +160,7 @@ public class DeepLearningProcessor extends AbstractProcessor<Image, Classificati
      * @throws MalformedModelException if model is malformed
      */
     public void loadLocalModel(Path modelDir, String modelName) throws IOException, MalformedModelException {
+        closeCurrentModel();
         logger.info("Loading local model: {}/{}", modelDir, modelName);
 
         Translator<Image, Classifications> translator = ImageClassificationTranslator.builder()
@@ -166,12 +169,27 @@ public class DeepLearningProcessor extends AbstractProcessor<Image, Classificati
                 .optApplySoftmax(true)
                 .build();
 
-        Model localModel = Model.newInstance(modelName);
+        localModel = Model.newInstance(modelName);
         localModel.load(modelDir);
 
         // Create predictor manually for local models
         predictor = localModel.newPredictor(translator);
         logger.info("Local model loaded: {}", modelName);
+    }
+
+    private void closeCurrentModel() {
+        if (predictor != null) {
+            try { predictor.close(); } catch (Exception ignored) {}
+            predictor = null;
+        }
+        if (model != null) {
+            try { model.close(); } catch (Exception ignored) {}
+            model = null;
+        }
+        if (localModel != null) {
+            try { localModel.close(); } catch (Exception ignored) {}
+            localModel = null;
+        }
     }
 
     /**
@@ -243,14 +261,7 @@ public class DeepLearningProcessor extends AbstractProcessor<Image, Classificati
 
     @Override
     protected void doShutdown() throws Exception {
-        if (predictor != null) {
-            predictor.close();
-            predictor = null;
-        }
-        if (model != null) {
-            model.close();
-            model = null;
-        }
+        closeCurrentModel();
         super.doShutdown();
         logger.info("Deep learning processor shut down");
     }

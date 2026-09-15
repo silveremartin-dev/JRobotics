@@ -69,9 +69,17 @@ public class MqttBridge extends AbstractComponent implements MqttCallback {
 
     @Override
     protected void doStop() throws Exception {
-        if (client != null && client.isConnected()) {
-            client.disconnect();
-            client.close();
+        if (client != null) {
+            if (client.isConnected()) {
+                try {
+                    client.disconnect();
+                } catch (Exception ignored) {
+                }
+            }
+            try {
+                client.close(true);
+            } catch (Exception ignored) {
+            }
             logger.info("Disconnected from MQTT broker");
         }
     }
@@ -99,7 +107,7 @@ public class MqttBridge extends AbstractComponent implements MqttCallback {
 
     @Override
     public void connectionLost(Throwable cause) {
-        logger.warn("MQTT connection lost: {}", cause.getMessage());
+        logger.warn("MQTT connection lost: {}", cause != null ? cause.getMessage() : "unknown reason");
     }
 
     @Override

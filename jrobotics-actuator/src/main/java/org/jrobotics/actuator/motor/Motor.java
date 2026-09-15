@@ -76,6 +76,9 @@ public class Motor extends AbstractActuator<MotorCommand> {
     
     @Override
     protected void doExecute(MotorCommand command) throws Exception {
+        if (command == null) {
+            return;
+        }
         this.targetSpeed = command.speed();
         setCurrentValue(command.speed());
         
@@ -105,6 +108,7 @@ public class Motor extends AbstractActuator<MotorCommand> {
      * @param durationMs the duration in milliseconds
      */
     private void simulateMovement(double speed, long durationMs) {
+        if (encoderTicksPerRevolution <= 0) return;
         // Simulate at a typical motor RPM
         double maxRpm = 100.0;
         double rpm = speed * maxRpm;
@@ -162,6 +166,7 @@ public class Motor extends AbstractActuator<MotorCommand> {
      * @return the distance in meters
      */
     public double getDistanceTraveled() {
+        if (encoderTicksPerRevolution <= 0) return 0.0;
         double circumference = Math.PI * wheelDiameter;
         double revolutions = (double) encoderCount / encoderTicksPerRevolution;
         return revolutions * circumference;

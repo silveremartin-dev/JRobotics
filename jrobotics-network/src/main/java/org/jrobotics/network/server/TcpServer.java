@@ -9,6 +9,7 @@
  */
 package org.jrobotics.network.server;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jrobotics.core.LifecycleException;
 import org.jrobotics.network.*;
 import org.slf4j.Logger;
@@ -16,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.*;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -34,8 +36,10 @@ import java.util.concurrent.*;
 public class TcpServer extends AbstractNetworkNode {
 
     private static final Logger logger = LoggerFactory.getLogger(TcpServer.class);
+    private static final int MAX_MESSAGE_SIZE = 10 * 1024 * 1024; // 10MB limit
 
     private final int port;
+    private final ObjectMapper mapper = new ObjectMapper();
     private ServerSocket serverSocket;
     private final Map<String, ClientConnection> clients = new ConcurrentHashMap<>();
     private final ExecutorService acceptExecutor;
@@ -75,7 +79,7 @@ public class TcpServer extends AbstractNetworkNode {
      * Accept loop for incoming connections.
      */
     private void acceptLoop() {
-        while (running && !serverSocket.isClosed()) {
+        while (running && serverSocket != null && !serverSocket.isClosed()) {
             try {
                 Socket socket = serverSocket.accept();
                 acceptExecutor.submit(() -> handleClient(socket));
@@ -92,8 +96,8 @@ public class TcpServer extends AbstractNetworkNode {
      */
     private void handleClient(Socket socket) {
         try {
-            ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
-            ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+            DataInputStream in = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
+            DataOutputStream out = new DataOutputStream(new BufferedOutputStream(socket.getOutputStream()));
 
             // Wait for connect message
             Message connectMsg = readMessage(in);
@@ -114,7 +118,7 @@ public class TcpServer extends AbstractNetworkNode {
             logger.info("[{}] Client connected: {}", System.currentTimeMillis(), clientId);
 
             // Read loop
-            while (running && socket.isConnected()) {
+            while (running && socket.isConnected() && !socket.isClosed()) {
                 Message msg = readMessage(in);
                 if (msg == null)
                     break;
@@ -134,12 +138,18 @@ public class TcpServer extends AbstractNetworkNode {
         } finally {
             // Clean up
             clients.values().removeIf(c -> {
-                if (!c.socket.isConnected()) {
+                if (c.socket.isClosed() || !c.socket.isConnected()) {
                     removePeer(c.clientId);
                     return true;
                 }
                 return false;
             });
+            try {
+                if (!socket.isClosed()) {
+                    socket.close();
+                }
+            } catch (IOException ignored) {
+            }
         }
     }
 
@@ -215,17 +225,27 @@ public class TcpServer extends AbstractNetworkNode {
         return clients.size();
     }
 
-    private Message readMessage(ObjectInputStream in) throws IOException, ClassNotFoundException {
+    private Message readMessage(DataInputStream in) throws IOException {
         try {
-            return (Message) in.readObject();
+            int length = in.readInt();
+            if (length <= 0 || length > MAX_MESSAGE_SIZE) {
+                throw new IOException("Invalid message length: " + length);
+            }
+            byte[] bytes = in.readNBytes(length);
+            if (bytes.length < length) {
+                return null;
+            }
+            return mapper.readValue(bytes, NetworkMessage.class);
         } catch (EOFException | SocketException e) {
             return null;
         }
     }
 
-    private void writeMessage(ObjectOutputStream out, Message msg) throws IOException {
+    private void writeMessage(DataOutputStream out, Message msg) throws IOException {
+        byte[] bytes = mapper.writeValueAsBytes(msg);
         synchronized (out) {
-            out.writeObject(msg);
+            out.writeInt(bytes.length);
+            out.write(bytes);
             out.flush();
         }
     }
@@ -236,9 +256,9 @@ public class TcpServer extends AbstractNetworkNode {
     private static class ClientConnection {
         final String clientId;
         final Socket socket;
-        final ObjectOutputStream out;
+        final DataOutputStream out;
 
-        ClientConnection(String clientId, Socket socket, ObjectOutputStream out) {
+        ClientConnection(String clientId, Socket socket, DataOutputStream out) {
             this.clientId = clientId;
             this.socket = socket;
             this.out = out;
